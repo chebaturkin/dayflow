@@ -1,0 +1,20 @@
+---
+import '../styles/global.css';
+---
+<html lang="ru"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>dayflow — план на день</title></head>
+<body><main class="shell"><header><a class="wordmark" href="/">dayflow<span>.</span></a><button id="theme" aria-label="сменить тему">◐</button></header>
+<section class="intro"><p class="eyebrow">вторник · 6 октября</p><h1>день без лишнего шума.</h1><p>собери пары, сохрани карточку, добавь важное в календарь.</p></section>
+<div class="layout"><section class="planner"><div class="section-head"><h2>сегодня</h2><button id="add">+ занятие</button></div><div id="lessons"></div></section><aside class="card"><p class="eyebrow">dayflow / 06.10</p><h2>мой день</h2><div id="card-lessons"></div><button id="png">сохранить карточку</button><p class="hint">данные остаются в этом браузере</p></aside></div></main>
+<script>
+  // @ts-nocheck
+  import { lessonToIcs } from '../lib/ics';
+  type Status='planned'|'moved'|'cancelled'; type Lesson={id:string;title:string;start:string;end:string;status:Status};
+  const fallback:Lesson[]=[{id:'design',title:'design systems',start:'09:00',end:'10:30',status:'planned'},{id:'english',title:'english practice',start:'11:40',end:'13:10',status:'cancelled'},{id:'studio',title:'studio practice',start:'13:40',end:'15:10',status:'moved'}];
+  const stored=localStorage.getItem('dayflow-lessons'); let lessons:Lesson[]=stored?JSON.parse(stored) as Lesson[]:fallback;
+  const root=document.querySelector<HTMLDivElement>('#lessons')!, card=document.querySelector<HTMLDivElement>('#card-lessons')!;
+  const save=()=>localStorage.setItem('dayflow-lessons',JSON.stringify(lessons));
+  const download=(text:string,name:string,type:string)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)};
+  const render=()=>{lessons.sort((a,b)=>a.start.localeCompare(b.start));root.innerHTML='';card.innerHTML='';lessons.forEach((l,i)=>{const row=document.createElement('article');row.className=`lesson ${l.status}`;row.innerHTML=`<time>${l.start}<small>${l.end}</small></time><input value="${l.title}"><select><option value="planned">по плану</option><option value="moved">перенесли</option><option value="cancelled">отменили</option></select><button class="ics">ics</button><button class="remove">×</button>`;const input=row.querySelector<HTMLInputElement>('input')!,select=row.querySelector<HTMLSelectElement>('select')!;select.value=l.status;input.oninput=()=>{l.title=input.value;save();renderCard()};select.onchange=()=>{l.status=select.value as Status;save();render()};row.querySelector<HTMLButtonElement>('.remove')!.onclick=()=>{lessons.splice(i,1);save();render()};row.querySelector<HTMLButtonElement>('.ics')!.onclick=()=>download(lessonToIcs('2026-10-06',l),`${l.title}.ics`,'text/calendar');root.append(row);});renderCard()};
+  const renderCard=()=>{card.innerHTML=lessons.filter(l=>l.status!=='cancelled').map(l=>`<p><b>${l.start}</b> ${l.title}</p>`).join('')||'<p>пока пусто</p>'};
+  document.querySelector<HTMLButtonElement>('#add')!.onclick=()=>{lessons.push({id:crypto.randomUUID(),title:'новое занятие',start:'16:00',end:'17:30',status:'planned'});save();render()};document.querySelector<HTMLButtonElement>('#theme')!.onclick=()=>document.documentElement.classList.toggle('dark');document.querySelector<HTMLButtonElement>('#png')!.onclick=()=>alert('экспорт png будет добавлен в следующем проходе');render();
+</script></body></html>
