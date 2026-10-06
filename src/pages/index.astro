@@ -3,8 +3,8 @@ import '../styles/global.css';
 ---
 <html lang="ru"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width" /><title>dayflow — план на день</title></head>
 <body><main class="shell"><header><a class="wordmark" href="/">dayflow<span>.</span></a><button id="theme" aria-label="сменить тему">◐</button></header>
-<section class="intro"><p class="eyebrow">вторник · 6 октября</p><h1>день без лишнего шума.</h1><p>собери пары, сохрани карточку, добавь важное в календарь.</p></section>
-<div class="layout"><section class="planner"><div class="section-head"><h2>сегодня</h2><button id="add">+ занятие</button></div><div id="lessons"></div></section><aside class="card"><p class="eyebrow">dayflow / 06.10</p><h2>мой день</h2><div id="card-lessons"></div><button id="png">сохранить карточку</button><p class="hint">данные остаются в этом браузере</p></aside></div></main>
+<section class="intro"><p class="eyebrow">вторник, 6 октября</p><h1>расписание на сегодня.</h1><p>добавьте занятия, измените статус и скачайте то, что нужно.</p></section>
+<div class="layout"><section class="planner"><div class="section-head"><h2>занятия</h2><button id="add">+ добавить занятие</button></div><div id="lessons"></div></section><aside class="card"><p class="eyebrow">dayflow / 06.10</p><h2>итог дня</h2><div id="card-lessons"></div><button id="png">сохранить png</button><p class="hint">данные сохраняются в этом браузере</p></aside></div></main>
 <script>
   // @ts-nocheck
   import { lessonToIcs } from '../lib/ics';
