@@ -23,13 +23,13 @@ with sync_playwright() as p:
     remove_dev_toolbar(page)
     page.screenshot(path=str(PUBLIC / "preview-light.png"), full_page=True)
 
-    page.get_by_role("button", name="сменить тему").click()
+    page.get_by_role("button", name="включить тёмную тему").click()
     page.wait_for_timeout(300)
     assert page.locator("html").get_attribute("class") == "dark"
     remove_dev_toolbar(page)
     page.screenshot(path=str(PUBLIC / "preview-dark.png"), full_page=True)
 
-    page.get_by_role("button", name="доступность", exact=True).click()
+    page.get_by_role("button", name="свободное время", exact=True).click()
     assert page.locator("#preview-card").get_attribute("data-mode") == "availability"
     assert "свободно" in page.locator("#preview-card").inner_text()
     assert "design systems" not in page.locator("#preview-card").inner_text()
@@ -40,7 +40,7 @@ with sync_playwright() as p:
     page.locator(".lesson").last.locator(".end").fill("12:00")
     page.locator(".lesson").last.locator(".start").press("Tab")
     assert page.locator("#conflict").is_visible()
-    assert "пересечение" in page.locator("#conflict").inner_text()
+    assert "время пересекается" in page.locator("#conflict").inner_text()
 
     with page.expect_download() as download_info:
         page.locator("#export-json").click()

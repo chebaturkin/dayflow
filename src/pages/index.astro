@@ -6,31 +6,31 @@ import '../styles/global.css';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="dayflow — красивые карточки расписания и доступности" />
-    <title>dayflow — карточки расписания</title>
+    <meta name="description" content="dayflow — план дня и свободное время в одной картинке. Без регистрации." />
+    <title>dayflow — план дня</title>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
         <div class="brand">
           <a class="wordmark" href="/">dayflow</a>
-          <span>карточки, которыми можно поделиться</span>
+          <span>план дня в одной картинке</span>
         </div>
         <nav aria-label="навигация">
-          <a href="#export">карточка</a>
-          <button id="theme" type="button" aria-label="сменить тему">тёмная тема</button>
+          <a href="#export">к карточке</a>
+          <button id="theme" type="button" aria-label="включить тёмную тему">включить тёмную тему</button>
         </nav>
       </header>
 
       <section class="intro">
         <div>
-          <p class="eyebrow">локально · без аккаунта</p>
-          <h1>покажите свой день</h1>
-          <p class="lede">соберите расписание, а затем отправьте план или только свободные окна</p>
+          <p class="eyebrow">всё остаётся в браузере</p>
+          <h1>соберите план дня</h1>
+          <p class="lede">запишите дела и сохраните план. При необходимости покажите только свободное время</p>
         </div>
         <div class="intro-note">
           <span class="intro-note-mark" aria-hidden="true">↳</span>
-          <p>картинка создаётся на вашем устройстве и ничего не отправляет в сеть</p>
+          <p>файл собирается на вашем устройстве. Расписание никуда не отправляется</p>
         </div>
       </section>
 
@@ -40,13 +40,13 @@ import '../styles/global.css';
           <input id="date" type="date" />
         </label>
         <label class="label-field">
-          <span>подпись</span>
-          <input id="label" type="text" maxlength="48" placeholder="например, студия" />
+          <span>название дня</span>
+          <input id="label" type="text" maxlength="48" placeholder="например, рабочий день" />
         </label>
         <div class="document-actions">
-          <button id="import" class="quiet-action" type="button">импорт JSON</button>
-          <button id="export-json" class="quiet-action" type="button">сохранить JSON</button>
-          <button id="reset" class="quiet-action" type="button">сбросить</button>
+          <button id="import" class="quiet-action" type="button">загрузить JSON</button>
+          <button id="export-json" class="quiet-action" type="button">сохранить копию</button>
+          <button id="reset" class="quiet-action" type="button">начать заново</button>
           <input id="file" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
@@ -55,42 +55,42 @@ import '../styles/global.css';
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
             <div>
-              <p class="eyebrow">содержание дня</p>
+              <p class="eyebrow">ваш день</p>
               <h2 id="lessons-heading">расписание</h2>
             </div>
             <div class="head-actions">
               <label class="preset-label">
-                <span class="sr-only">загрузить пример</span>
-                <select id="preset" aria-label="загрузить пример">
-                  <option value="">пример</option>
+                <span class="sr-only">выбрать пример</span>
+                <select id="preset" aria-label="выбрать пример">
+                  <option value="">заполнить примером</option>
                   <option value="study">учебный день</option>
                   <option value="work">рабочий день</option>
                   <option value="empty">чистый лист</option>
                 </select>
               </label>
-              <button id="add" class="text-action" type="button">добавить <span aria-hidden="true">→</span></button>
+              <button id="add" class="text-action" type="button">добавить событие <span aria-hidden="true">→</span></button>
             </div>
           </div>
 
           <div id="summary" class="summary-strip" aria-live="polite"></div>
           <div id="conflict" class="conflict" role="status" aria-live="polite" hidden></div>
           <div id="lessons"></div>
-          <p id="empty-editor" class="empty-editor" hidden>добавьте первое событие, чтобы собрать карточку</p>
-          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> добавить событие</div>
+          <p id="empty-editor" class="empty-editor" hidden>добавьте событие — оно появится в карточке</p>
+          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> — добавить событие</div>
         </section>
 
         <aside class="export" id="export" aria-labelledby="preview-heading">
           <div class="export-head">
             <div>
-              <p class="eyebrow">готовый лист</p>
+              <p class="eyebrow">карточка дня</p>
               <h2 id="preview-heading">предпросмотр</h2>
             </div>
             <span class="count" id="count">0 событий</span>
           </div>
 
-          <div class="mode-switch" role="group" aria-label="режим карточки">
-            <button data-mode="plan" class="mode active" type="button">план</button>
-            <button data-mode="availability" class="mode" type="button">доступность</button>
+          <div class="mode-switch" role="group" aria-label="что показать в карточке">
+            <button data-mode="plan" class="mode active" type="button">план дня</button>
+            <button data-mode="availability" class="mode" type="button">свободное время</button>
           </div>
 
           <div class="preview-card" id="preview-card" data-style="clean" data-mode="plan">
@@ -100,15 +100,15 @@ import '../styles/global.css';
             </div>
             <div id="card-summary" class="card-summary"></div>
             <div id="card-lessons" class="card-list"></div>
-            <div id="card-footer" class="card-footer">собрано в dayflow</div>
+            <div id="card-footer" class="card-footer">создано в dayflow</div>
           </div>
 
           <div class="export-options">
             <p class="option-label">оформление</p>
-            <div class="styles" role="group" aria-label="вид карточки">
+            <div class="styles" role="group" aria-label="оформление карточки">
               <button data-style="clean" class="style active" type="button">
                 <span class="mini-card mini-clean" aria-hidden="true"></span>
-                <span>лист</span>
+                <span>бумага</span>
               </button>
               <button data-style="dark" class="style" type="button">
                 <span class="mini-card mini-dark" aria-hidden="true"></span>
@@ -116,20 +116,20 @@ import '../styles/global.css';
               </button>
               <button data-style="lines" class="style" type="button">
                 <span class="mini-card mini-lines" aria-hidden="true"></span>
-                <span>линии</span>
+                <span>в линию</span>
               </button>
             </div>
             <label class="check">
               <input id="repo" type="checkbox" checked />
-              <span>добавить ссылку на репозиторий</span>
+              <span>показать ссылку на проект</span>
             </label>
           </div>
 
           <div class="export-actions">
-            <button id="png" class="primary" type="button">сохранить PNG</button>
-            <button id="ics" class="secondary" type="button">скачать день в ICS</button>
+            <button id="png" class="primary" type="button">сохранить картинку (PNG)</button>
+            <button id="ics" class="secondary" type="button">скачать события (ICS)</button>
           </div>
-          <p class="hint">файл создаётся на вашем устройстве</p>
+          <p class="hint">файл создаётся на устройстве — данные не отправляются</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         </aside>
       </div>
@@ -144,9 +144,9 @@ import '../styles/global.css';
       const today = new Date().toISOString().slice(0, 10);
       const samples = {
         study: [
-          { id: 'study-design', title: 'design systems', start: '09:00', end: '10:30', status: 'planned' },
-          { id: 'study-english', title: 'english practice', start: '11:40', end: '13:10', status: 'planned' },
-          { id: 'study-studio', title: 'studio practice', start: '13:40', end: '15:10', status: 'moved', note: 'аудитория 204' },
+          { id: 'study-design', title: 'дизайн-системы', start: '09:00', end: '10:30', status: 'planned' },
+          { id: 'study-english', title: 'английский', start: '11:40', end: '13:10', status: 'planned' },
+          { id: 'study-studio', title: 'практика в студии', start: '13:40', end: '15:10', status: 'moved', note: 'аудитория 204' },
         ],
         work: [
           { id: 'work-sync', title: 'командная встреча', start: '10:00', end: '10:30', status: 'planned' },
@@ -160,7 +160,7 @@ import '../styles/global.css';
       const wordForEvents = (amount) => amount === 1 ? 'событие' : amount > 1 && amount < 5 ? 'события' : 'событий';
       const wordForWindows = (amount) => amount === 1 ? 'окно' : amount > 1 && amount < 5 ? 'окна' : 'окон';
       const formatDate = (value) => {
-        if (!value) return 'день без даты';
+        if (!value) return 'дата не указана';
         return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
       };
       const formatMinutes = (minutes) => {
@@ -222,11 +222,11 @@ import '../styles/global.css';
         const derived = summarizeSchedule(documentState.lessons);
         const free = derived.freeWindows.length;
         summary.innerHTML = '<span><strong>' + derived.activeCount + '</strong> ' + wordForEvents(derived.activeCount) + '</span>'
-          + '<span><strong>' + formatMinutes(derived.totalMinutes) + '</strong> в расписании</span>'
-          + '<span><strong>' + free + '</strong> ' + wordForWindows(free) + '</span>';
+          + '<span>занято <strong>' + formatMinutes(derived.totalMinutes) + '</strong></span>'
+          + '<span>свободно <strong>' + free + '</strong> ' + wordForWindows(free) + '</span>';
         if (derived.conflicts.length) {
           conflict.hidden = false;
-          conflict.textContent = 'есть пересечение: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + ' · проверьте время';
+          conflict.textContent = 'время пересекается: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + '. Проверьте события';
         } else {
           conflict.hidden = true;
           conflict.textContent = '';
@@ -242,13 +242,13 @@ import '../styles/global.css';
         card.dataset.mode = mode;
         document.querySelector('#card-date').textContent = formatDate(documentState.date);
         document.querySelector('#card-label').textContent = documentState.label.trim() || 'dayflow';
-        cardSummary.innerHTML = '<span>' + formatMinutes(derived.totalMinutes) + ' занято</span><span>' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length) + '</span>';
+        cardSummary.innerHTML = '<span>занято ' + formatMinutes(derived.totalMinutes) + '</span><span>свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length) + '</span>';
         cardLessons.replaceChildren();
 
         if (!active.length) {
           const empty = document.createElement('p');
           empty.className = 'empty';
-          empty.textContent = 'нет событий';
+          empty.textContent = 'пока нет событий';
           cardLessons.append(empty);
         } else if (mode === 'plan') {
           active.forEach((lesson) => {
@@ -258,7 +258,7 @@ import '../styles/global.css';
             time.textContent = lesson.start;
             const body = document.createElement('div');
             const title = document.createElement('strong');
-            title.textContent = lesson.title || 'без названия';
+            title.textContent = lesson.title || 'название не указано';
             body.append(title);
             if (lesson.note) {
               const note = document.createElement('small');
@@ -267,7 +267,7 @@ import '../styles/global.css';
             }
             if (lesson.status === 'moved') {
               const mark = document.createElement('em');
-              mark.textContent = 'перенесли';
+              mark.textContent = 'перенесено';
               body.append(mark);
             }
             line.append(time, body);
@@ -315,8 +315,8 @@ import '../styles/global.css';
           row.className = 'lesson ' + lesson.status;
           row.innerHTML = '<div class="time-fields"><label><span>с</span><input class="start" type="time" aria-label="начало" /></label><label><span>до</span><input class="end" type="time" aria-label="конец" /></label></div>'
             + '<div class="lesson-main"><input class="title" aria-label="название события" placeholder="название события" /><input class="note" aria-label="заметка" placeholder="заметка для себя (необязательно)" /></div>'
-            + '<select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесли</option><option value="cancelled">отменили</option></select>'
-            + '<div class="row-actions"><button class="duplicate" type="button" aria-label="дублировать">+</button><button class="ics" type="button">ICS</button><button class="remove" type="button" aria-label="удалить">×</button></div>';
+            + '<select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесено</option><option value="cancelled">отменено</option></select>'
+            + '<div class="row-actions"><button class="duplicate" type="button" aria-label="создать копию">+</button><button class="ics" type="button">ICS</button><button class="remove" type="button" aria-label="удалить">×</button></div>';
           const start = row.querySelector('.start');
           const end = row.querySelector('.end');
           const title = row.querySelector('.title');
@@ -375,7 +375,10 @@ import '../styles/global.css';
 
       const setTheme = (theme) => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.querySelector('#theme').textContent = theme === 'dark' ? 'светлая тема' : 'тёмная тема';
+        const themeButton = document.querySelector('#theme');
+        const nextThemeLabel = theme === 'dark' ? 'включить светлую тему' : 'включить тёмную тему';
+        themeButton.textContent = nextThemeLabel;
+        themeButton.setAttribute('aria-label', nextThemeLabel);
         localStorage.setItem('dayflow-theme', theme);
       };
 
@@ -417,11 +420,11 @@ import '../styles/global.css';
       document.querySelector('#theme').onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
       document.querySelector('#ics').onclick = () => {
         download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar');
-        showSaved('день сохранён в ICS');
+        showSaved('день сохранён как ICS-файл');
       };
       document.querySelector('#export-json').onclick = () => {
         download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json');
-        showSaved('JSON сохранён');
+        showSaved('копия сохранена');
       };
       document.querySelector('#import').onclick = () => document.querySelector('#file').click();
       document.querySelector('#file').onchange = async (event) => {
@@ -433,7 +436,7 @@ import '../styles/global.css';
           render();
           showSaved('расписание загружено');
         } catch (error) {
-          showSaved(error.message || 'не удалось загрузить файл');
+          showSaved(error.message || 'файл не удалось открыть. Выберите JSON из dayflow');
         }
         event.target.value = '';
       };
@@ -441,7 +444,7 @@ import '../styles/global.css';
         documentState = fallbackDocument();
         save();
         render();
-        showSaved('демо-расписание восстановлено');
+        showSaved('пример восстановлен');
       };
       window.addEventListener('keydown', (event) => {
         if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
@@ -454,16 +457,91 @@ import '../styles/global.css';
         const canvas = document.createElement('canvas');
         canvas.width = 1600;
         canvas.height = 2000;
-        const context = canvas.getContext('2d');
-        const dark = style === 'dark';
-        const ink = dark ? '#f4f7f2' : '#17211b';
-        const muted = dark ? '#c3d0c7' : '#667169';
-        const line = dark ? '#466050' : '#d7ded8';
-        const accent = dark ? '#a8e0b9' : '#147a50';
-        context.fillStyle = dark ? '#17251d' : '#f7f7f2';
+        let context = canvas.getContext('2d');
+        const palettes = {
+          clean: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
+          dark: { paper: '#17251d', ink: '#f4f7f2', muted: '#c3d0c7', line: '#466050', accent: '#a8e0b9', accentSoft: '#243f2e' },
+          lines: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
+        };
+        const colors = palettes[style] || palettes.clean;
+        const wrap = (value, font, maxWidth) => {
+          context.font = font;
+          const paragraphs = String(value || '').split(/\r?\n/);
+          const lines = [];
+          paragraphs.forEach((paragraph) => {
+            const words = paragraph.trim().split(/\s+/).filter(Boolean);
+            if (!words.length) {
+              lines.push('');
+              return;
+            }
+            let line = '';
+            words.forEach((word) => {
+              const candidate = line ? line + ' ' + word : word;
+              if (context.measureText(candidate).width <= maxWidth) {
+                line = candidate;
+                return;
+              }
+              if (line) lines.push(line);
+              if (context.measureText(word).width <= maxWidth) {
+                line = word;
+                return;
+              }
+              let fragment = '';
+              Array.from(word).forEach((character) => {
+                const next = fragment + character;
+                if (!fragment || context.measureText(next).width <= maxWidth) fragment = next;
+                else {
+                  lines.push(fragment);
+                  fragment = character;
+                }
+              });
+              line = fragment;
+            });
+            if (line) lines.push(line);
+          });
+          return lines.length ? lines : [''];
+        };
+        const derived = summarizeSchedule(documentState.lessons);
+        const active = sortLessons(activeLessons(documentState.lessons));
+        const titleFont = '500 56px system-ui';
+        const noteFont = '400 27px system-ui';
+        const statusFont = '400 24px system-ui';
+        const bodyWidth = 1090;
+        const planRows = active.map((lesson) => {
+          const title = wrap(lesson.title || 'название не указано', titleFont, bodyWidth);
+          const note = lesson.note ? wrap(lesson.note, noteFont, bodyWidth) : [];
+          const status = lesson.status === 'moved' ? ['перенесено'] : [];
+          const contentHeight = title.length * 66
+            + (note.length ? 10 + note.length * 35 : 0)
+            + (status.length ? 9 + status.length * 31 : 0);
+          return { lesson, title, note, status, height: Math.max(145, contentHeight + 28) };
+        });
+        const availabilityBlocks = [];
+        active.forEach((lesson, index) => {
+          availabilityBlocks.push({ kind: 'busy', start: lesson.start, end: lesson.end });
+          if (derived.freeWindows[index]) {
+            availabilityBlocks.push({ kind: 'free', start: derived.freeWindows[index].start, end: derived.freeWindows[index].end });
+          }
+        });
+        availabilityBlocks.sort((a, b) => a.start.localeCompare(b.start));
+        const contentHeight = mode === 'plan'
+          ? (planRows.length ? planRows.reduce((total, row) => total + row.height, 0) : 100)
+          : Math.max(availabilityBlocks.length, 1) * 150;
+        const contentBottom = 540 + contentHeight;
+        const repoY = contentBottom + 28;
+        const footerY = repoY + (repo.checked ? 64 : 0);
+        canvas.height = Math.max(2000, footerY + 120);
+        context = canvas.getContext('2d');
+        const draw = (value, x, y, font, color) => {
+          context.font = font;
+          context.fillStyle = color;
+          context.fillText(value, x, y);
+        };
+        context.fillStyle = colors.paper;
         context.fillRect(0, 0, canvas.width, canvas.height);
         if (style === 'lines') {
-          context.strokeStyle = line;
+          context.strokeStyle = colors.line;
+          context.lineWidth = 1;
           for (let y = 0; y < canvas.height; y += 72) {
             context.beginPath();
             context.moveTo(80, y);
@@ -471,52 +549,51 @@ import '../styles/global.css';
             context.stroke();
           }
         }
-        const derived = summarizeSchedule(documentState.lessons);
-        const active = sortLessons(activeLessons(documentState.lessons));
-        const draw = (text, x, y, font, color) => {
-          context.font = font;
-          context.fillStyle = color;
-          context.fillText(text, x, y);
-        };
-        draw(mode === 'availability' ? 'доступность' : 'план дня', 120, 190, '600 92px system-ui', ink);
-        draw(formatDate(documentState.date), 120, 258, '400 34px system-ui', muted);
-        draw(documentState.label.trim() || 'dayflow', 120, 310, '400 30px monospace', muted);
-        draw(formatMinutes(derived.totalMinutes) + ' занято · ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length), 120, 410, '400 34px system-ui', accent);
+        draw(mode === 'availability' ? 'свободное время' : 'план дня', 120, 190, '600 92px system-ui', colors.ink);
+        draw(formatDate(documentState.date), 120, 258, '400 34px system-ui', colors.muted);
+        draw(documentState.label.trim() || 'dayflow', 120, 310, '400 30px monospace', colors.muted);
+        draw('занято ' + formatMinutes(derived.totalMinutes) + ' · свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length), 120, 410, '400 34px system-ui', colors.accent);
         let y = 540;
         if (!active.length) {
-          draw('нет событий', 120, y, '400 42px system-ui', muted);
+          draw('пока нет событий', 120, y, '400 42px system-ui', colors.muted);
         } else if (mode === 'plan') {
-          active.forEach((lesson) => {
-            context.strokeStyle = line;
+          planRows.forEach((row) => {
+            const { lesson, title, note, status } = row;
+            context.strokeStyle = colors.line;
             context.beginPath();
-            context.moveTo(120, y + 42);
-            context.lineTo(1480, y + 42);
+            context.moveTo(120, y + row.height - 24);
+            context.lineTo(1480, y + row.height - 24);
             context.stroke();
-            draw(lesson.start, 120, y, '400 36px monospace', accent);
-            draw(lesson.title || 'без названия', 390, y, '500 56px system-ui', ink);
-            if (lesson.status === 'moved') draw('перенесли', 390, y + 42, '400 24px system-ui', muted);
-            y += 170;
+            draw(lesson.start, 120, y, '400 36px monospace', colors.accent);
+            title.forEach((line, index) => draw(line, 390, y + index * 66, titleFont, colors.ink));
+            let detailY = y + title.length * 66 + 10;
+            note.forEach((line) => {
+              draw(line, 390, detailY, noteFont, colors.muted);
+              detailY += 35;
+            });
+            if (status.length) draw(status[0], 390, detailY + 9, statusFont, colors.accent);
+            y += row.height;
           });
         } else {
-          const blocks = [];
-          active.forEach((lesson, index) => {
-            blocks.push({ kind: 'busy', start: lesson.start, end: lesson.end });
-            if (derived.freeWindows[index]) blocks.push({ kind: 'free', start: derived.freeWindows[index].start, end: derived.freeWindows[index].end });
-          });
-          blocks.sort((a, b) => a.start.localeCompare(b.start)).forEach((block) => {
-            context.strokeStyle = line;
+          availabilityBlocks.forEach((block) => {
+            if (block.kind === 'free') {
+              context.fillStyle = colors.accentSoft;
+              context.fillRect(120, y - 48, 1360, 100);
+            }
+            context.strokeStyle = colors.line;
             context.beginPath();
             context.moveTo(120, y + 42);
             context.lineTo(1480, y + 42);
             context.stroke();
-            draw(block.start + '–' + block.end, 120, y, '400 36px monospace', accent);
-            draw(block.kind === 'free' ? 'свободно' : 'занято', 480, y, '500 56px system-ui', ink);
+            draw(block.start + '–' + block.end, 120, y, '400 36px monospace', colors.accent);
+            draw(block.kind === 'free' ? 'свободно' : 'занято', 480, y, '500 56px system-ui', colors.ink);
             y += 150;
           });
         }
-        if (repo.checked) draw('github.com/chebaturkin/dayflow', 120, 1840, '400 26px monospace', muted);
+        if (repo.checked) draw('github.com/chebaturkin/dayflow', 120, repoY, '400 26px monospace', colors.muted);
+        draw('создано в dayflow', 120, footerY, '400 24px system-ui', colors.muted);
         canvas.toBlob((blob) => blob && download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'), 'image/png');
-        showSaved('PNG сохранён');
+        showSaved('картинка сохранена');
       };
 
       setTheme(localStorage.getItem('dayflow-theme') === 'dark' ? 'dark' : 'light');
