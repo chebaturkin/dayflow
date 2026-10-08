@@ -25,7 +25,7 @@
 </section>
 ```
 
-- [ ] Replace the export hint with `<p class="hint"><span aria-hidden="true">⌁</span> данные остаются на устройстве</p>`, keeping the existing `hint` and `save-status` classes.
+- [ ] Replace the export hint with plain text `<p class="hint">данные остаются на устройстве</p>`, keeping the existing `hint` and `save-status` classes so the privacy copy stays neutral and free of decorative symbols.
 - [ ] Keep `ваш день` and `карточка дня` as useful section landmarks; their visual weight is adjusted in CSS.
 - [ ] Run `rg -n "всё остаётся|тихий ритм|intro-note|intro-note-mark|↳" src/pages/index.astro`; expect no matches.
 - [ ] Commit with `git add src/pages/index.astro && git commit -m "refactor: simplify dayflow hero copy"`.
@@ -74,7 +74,7 @@ html.dark {
 
 - [ ] Update `.preview-card` to warm paper variables (`#fffdf9`, `#2b2733`, `#766f7b`, `#e7dce0`, `#a95e6d`), `border-radius: var(--radius-md)`, and a soft shadow. Update dark preview values to `#30263a`, `#fbf1ee`, `#cbbbc3`, `#4a3a50`, `#e6a6a3`.
 - [ ] Round `.style`, `.mini-card`, `.primary`, and `.secondary` using `var(--radius-sm)` or `var(--radius-md)`. Use rose active/hover states and preserve labels and IDs.
-- [ ] Style `.hint` as a centered quiet line with `display: flex`, `gap: 6px`, and rose `span`; do not add arrows.
+- [ ] Style `.hint` as a centered quiet line with muted text and no decorative arrow or symbol.
 - [ ] Run `rg -n "intro-note|intro-note-mark|↳|#16764e|#326249" src/pages/index.astro src/styles/global.css`; expect no matches.
 - [ ] Commit with `git add src/styles/global.css src/pages/index.astro && git commit -m "style: polish dayflow preview and export controls"`.
 

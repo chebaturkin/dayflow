@@ -24,13 +24,8 @@ import '../styles/global.css';
 
       <section class="intro">
         <div>
-          <p class="eyebrow">всё остаётся в браузере</p>
           <h1>соберите план дня</h1>
           <p class="lede">запишите дела и сохраните план. При необходимости покажите только свободное время</p>
-        </div>
-        <div class="intro-note">
-          <span class="intro-note-mark" aria-hidden="true">↳</span>
-          <p>файл собирается на вашем устройстве. Расписание никуда не отправляется</p>
         </div>
       </section>
 
@@ -55,7 +50,6 @@ import '../styles/global.css';
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
             <div>
-              <p class="eyebrow">ваш день</p>
               <h2 id="lessons-heading">расписание</h2>
             </div>
             <div class="head-actions">
@@ -68,7 +62,7 @@ import '../styles/global.css';
                   <option value="empty">чистый лист</option>
                 </select>
               </label>
-              <button id="add" class="text-action" type="button">добавить событие <span aria-hidden="true">→</span></button>
+              <button id="add" class="text-action" type="button">добавить событие</button>
             </div>
           </div>
 
@@ -82,7 +76,6 @@ import '../styles/global.css';
         <aside class="export" id="export" aria-labelledby="preview-heading">
           <div class="export-head">
             <div>
-              <p class="eyebrow">карточка дня</p>
               <h2 id="preview-heading">предпросмотр</h2>
             </div>
             <span class="count" id="count">0 событий</span>
@@ -129,7 +122,7 @@ import '../styles/global.css';
             <button id="png" class="primary" type="button">сохранить картинку (PNG)</button>
             <button id="ics" class="secondary" type="button">скачать события (ICS)</button>
           </div>
-          <p class="hint">файл создаётся на устройстве — данные не отправляются</p>
+          <p class="hint">данные остаются на устройстве</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         </aside>
       </div>
@@ -459,9 +452,9 @@ import '../styles/global.css';
         canvas.height = 2000;
         let context = canvas.getContext('2d');
         const palettes = {
-          clean: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
-          dark: { paper: '#17251d', ink: '#f4f7f2', muted: '#c3d0c7', line: '#466050', accent: '#a8e0b9', accentSoft: '#243f2e' },
-          lines: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
+          clean: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
+          dark: { paper: '#30263a', ink: '#fbf1ee', muted: '#cbbbc3', line: '#4a3a50', accent: '#e6a6a3', accentSoft: '#4a2f3a' },
+          lines: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
         };
         const colors = palettes[style] || palettes.clean;
         const wrap = (value, font, maxWidth) => {
