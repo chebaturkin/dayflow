@@ -55,13 +55,28 @@ const minutesToTime = (value: number) => {
   return hour + ':' + minute;
 };
 
+const mergedActiveIntervals = (lessons: Lesson[]) => {
+  const intervals: Array<{ start: number; end: number }> = [];
+  sortLessons(activeLessons(lessons)).forEach((lesson) => {
+    const start = timeToMinutes(lesson.start);
+    const end = timeToMinutes(lesson.end);
+    const previous = intervals.at(-1);
+    if (previous && start <= previous.end) {
+      previous.end = Math.max(previous.end, end);
+    } else {
+      intervals.push({ start, end });
+    }
+  });
+  return intervals;
+};
+
 export const freeWindows = (lessons: Lesson[], minimumMinutes = 30): FreeWindow[] => {
-  const active = sortLessons(activeLessons(lessons));
+  const intervals = mergedActiveIntervals(lessons);
   const windows: FreeWindow[] = [];
 
-  for (let index = 1; index < active.length; index += 1) {
-    const previousEnd = timeToMinutes(active[index - 1].end);
-    const nextStart = timeToMinutes(active[index].start);
+  for (let index = 1; index < intervals.length; index += 1) {
+    const previousEnd = intervals[index - 1].end;
+    const nextStart = intervals[index].start;
     const minutes = nextStart - previousEnd;
     if (minutes >= minimumMinutes) {
       windows.push({ start: minutesToTime(previousEnd), end: minutesToTime(nextStart), minutes });
@@ -75,18 +90,20 @@ export const conflicts = (lessons: Lesson[]): Conflict[] => {
   const active = sortLessons(activeLessons(lessons));
   const result: Conflict[] = [];
 
-  for (let index = 0; index < active.length - 1; index += 1) {
-    const first = active[index];
-    const second = active[index + 1];
-    const overlapStart = Math.max(timeToMinutes(first.start), timeToMinutes(second.start));
-    const overlapEnd = Math.min(timeToMinutes(first.end), timeToMinutes(second.end));
-    if (overlapStart < overlapEnd) {
-      result.push({
-        firstId: first.id,
-        secondId: second.id,
-        start: minutesToTime(overlapStart),
-        end: minutesToTime(overlapEnd),
-      });
+  for (let firstIndex = 0; firstIndex < active.length - 1; firstIndex += 1) {
+    for (let secondIndex = firstIndex + 1; secondIndex < active.length; secondIndex += 1) {
+      const first = active[firstIndex];
+      const second = active[secondIndex];
+      const overlapStart = Math.max(timeToMinutes(first.start), timeToMinutes(second.start));
+      const overlapEnd = Math.min(timeToMinutes(first.end), timeToMinutes(second.end));
+      if (overlapStart < overlapEnd) {
+        result.push({
+          firstId: first.id,
+          secondId: second.id,
+          start: minutesToTime(overlapStart),
+          end: minutesToTime(overlapEnd),
+        });
+      }
     }
   }
 

@@ -47,6 +47,25 @@ describe('schedule model', () => {
     ])).toEqual([{ firstId: 'one', secondId: 'two', start: '10:00', end: '10:30' }]);
   });
 
+  it('reports every overlap in a long block', () => {
+    expect(conflicts([
+      { id: 'long', title: 'long', start: '09:00', end: '12:00', status: 'planned' },
+      { id: 'middle', title: 'middle', start: '10:00', end: '11:00', status: 'planned' },
+      { id: 'late', title: 'late', start: '11:30', end: '13:00', status: 'planned' },
+    ])).toEqual([
+      { firstId: 'long', secondId: 'middle', start: '10:00', end: '11:00' },
+      { firstId: 'long', secondId: 'late', start: '11:30', end: '12:00' },
+    ]);
+  });
+
+  it('merges overlapping blocks before finding free windows', () => {
+    expect(freeWindows([
+      { id: 'long', title: 'long', start: '09:00', end: '12:00', status: 'planned' },
+      { id: 'middle', title: 'middle', start: '10:00', end: '11:00', status: 'planned' },
+      { id: 'late', title: 'late', start: '13:00', end: '14:00', status: 'planned' },
+    ])).toEqual([{ start: '12:00', end: '13:00', minutes: 60 }]);
+  });
+
   it('summarizes active time and gaps', () => {
     expect(summarizeSchedule(lessons)).toMatchObject({
       activeCount: 2,

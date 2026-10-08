@@ -17,4 +17,15 @@ describe('portable schedule documents', () => {
     expect(() => parseDocument('{"version":1}')).toThrow(DocumentParseError);
     expect(() => parseDocument(JSON.stringify({ ...document, lessons: [{ ...document.lessons[0], id: 'one' }, { ...document.lessons[0], id: 'one' }] }))).toThrow('повторяющиеся');
   });
+
+  it('rejects impossible event times', () => {
+    expect(() => parseDocument(JSON.stringify({
+      ...document,
+      lessons: [{ ...document.lessons[0], start: '25:00' }],
+    }))).toThrow(DocumentParseError);
+    expect(() => parseDocument(JSON.stringify({
+      ...document,
+      lessons: [{ ...document.lessons[0], start: '11:00', end: '10:00' }],
+    }))).toThrow(DocumentParseError);
+  });
 });
