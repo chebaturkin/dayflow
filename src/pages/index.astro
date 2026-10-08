@@ -6,31 +6,58 @@ import '../styles/global.css';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="dayflow — простой редактор карточек из расписания" />
-    <title>dayflow</title>
+    <meta name="description" content="dayflow — красивые карточки расписания и доступности" />
+    <title>dayflow — карточки расписания</title>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
         <div class="brand">
           <a class="wordmark" href="/">dayflow</a>
-          <span>карточки из расписания</span>
+          <span>карточки, которыми можно поделиться</span>
         </div>
         <nav aria-label="навигация">
-          <a href="#export">настройки</a>
+          <a href="#export">карточка</a>
           <button id="theme" type="button" aria-label="сменить тему">тёмная тема</button>
         </nav>
       </header>
 
       <section class="intro">
-        <h1>соберите карточку дня</h1>
-        <p class="lede">добавьте занятия, выберите оформление и сохраните готовый лист</p>
+        <div>
+          <p class="eyebrow">локально · без аккаунта</p>
+          <h1>покажите свой день</h1>
+          <p class="lede">соберите расписание, а затем отправьте план или только свободные окна</p>
+        </div>
+        <div class="intro-note">
+          <span class="intro-note-mark" aria-hidden="true">↳</span>
+          <p>картинка создаётся на вашем устройстве и ничего не отправляет в сеть</p>
+        </div>
+      </section>
+
+      <section class="document-bar" aria-label="параметры дня">
+        <label class="date-field">
+          <span>дата</span>
+          <input id="date" type="date" />
+        </label>
+        <label class="label-field">
+          <span>подпись</span>
+          <input id="label" type="text" maxlength="48" placeholder="например, студия" />
+        </label>
+        <div class="document-actions">
+          <button id="import" class="quiet-action" type="button">импорт JSON</button>
+          <button id="export-json" class="quiet-action" type="button">сохранить JSON</button>
+          <button id="reset" class="quiet-action" type="button">сбросить</button>
+          <input id="file" type="file" accept="application/json,.json" hidden />
+        </div>
       </section>
 
       <div class="layout">
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
-            <h2 id="lessons-heading">занятия</h2>
+            <div>
+              <p class="eyebrow">содержание дня</p>
+              <h2 id="lessons-heading">расписание</h2>
+            </div>
             <div class="head-actions">
               <label class="preset-label">
                 <span class="sr-only">загрузить пример</span>
@@ -41,21 +68,43 @@ import '../styles/global.css';
                   <option value="empty">чистый лист</option>
                 </select>
               </label>
-              <button id="add" class="text-action" type="button">добавить занятие <span aria-hidden="true">→</span></button>
+              <button id="add" class="text-action" type="button">добавить <span aria-hidden="true">→</span></button>
             </div>
           </div>
+
+          <div id="summary" class="summary-strip" aria-live="polite"></div>
+          <div id="conflict" class="conflict" role="status" aria-live="polite" hidden></div>
           <div id="lessons"></div>
+          <p id="empty-editor" class="empty-editor" hidden>добавьте первое событие, чтобы собрать карточку</p>
+          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> добавить событие</div>
         </section>
 
         <aside class="export" id="export" aria-labelledby="preview-heading">
           <div class="export-head">
-            <h2 id="preview-heading">предпросмотр</h2>
-            <span class="count" id="count">0 занятий</span>
+            <div>
+              <p class="eyebrow">готовый лист</p>
+              <h2 id="preview-heading">предпросмотр</h2>
+            </div>
+            <span class="count" id="count">0 событий</span>
           </div>
-          <div id="card-lessons" class="card-list"></div>
+
+          <div class="mode-switch" role="group" aria-label="режим карточки">
+            <button data-mode="plan" class="mode active" type="button">план</button>
+            <button data-mode="availability" class="mode" type="button">доступность</button>
+          </div>
+
+          <div class="preview-card" id="preview-card" data-style="clean" data-mode="plan">
+            <div class="preview-card-head">
+              <span id="card-date">06 октября 2026</span>
+              <span id="card-label">dayflow</span>
+            </div>
+            <div id="card-summary" class="card-summary"></div>
+            <div id="card-lessons" class="card-list"></div>
+            <div id="card-footer" class="card-footer">собрано в dayflow</div>
+          </div>
 
           <div class="export-options">
-            <p class="option-label">выберите оформление</p>
+            <p class="option-label">оформление</p>
             <div class="styles" role="group" aria-label="вид карточки">
               <button data-style="clean" class="style active" type="button">
                 <span class="mini-card mini-clean" aria-hidden="true"></span>
@@ -76,7 +125,10 @@ import '../styles/global.css';
             </label>
           </div>
 
-          <button id="png" class="primary" type="button">сохранить карточку</button>
+          <div class="export-actions">
+            <button id="png" class="primary" type="button">сохранить PNG</button>
+            <button id="ics" class="secondary" type="button">скачать день в ICS</button>
+          </div>
           <p class="hint">файл создаётся на вашем устройстве</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         </aside>
@@ -85,16 +137,16 @@ import '../styles/global.css';
 
     <script>
       // @ts-nocheck
-      import { lessonToIcs } from '../lib/ics';
+      import { activeLessons, sortLessons, summarizeSchedule } from '../lib/schedule';
+      import { lessonsToIcs } from '../lib/ics';
+      import { parseDocument, serializeDocument } from '../lib/document';
 
-      type Status = 'planned' | 'moved' | 'cancelled';
-      type Lesson = { id: string; title: string; start: string; end: string; status: Status };
-
-      const samples: Record<string, Lesson[]> = {
+      const today = new Date().toISOString().slice(0, 10);
+      const samples = {
         study: [
           { id: 'study-design', title: 'design systems', start: '09:00', end: '10:30', status: 'planned' },
           { id: 'study-english', title: 'english practice', start: '11:40', end: '13:10', status: 'planned' },
-          { id: 'study-studio', title: 'studio practice', start: '13:40', end: '15:10', status: 'moved' },
+          { id: 'study-studio', title: 'studio practice', start: '13:40', end: '15:10', status: 'moved', note: 'аудитория 204' },
         ],
         work: [
           { id: 'work-sync', title: 'командная встреча', start: '10:00', end: '10:30', status: 'planned' },
@@ -102,75 +154,149 @@ import '../styles/global.css';
           { id: 'work-review', title: 'разбор задач', start: '15:30', end: '16:15', status: 'planned' },
         ],
       };
-      const fallback: Lesson[] = samples.study;
 
-      const cloneLessons = (value: Lesson[]) => value.map((lesson) => ({ ...lesson }));
-      const isLesson = (value: unknown): value is Lesson => {
-        if (!value || typeof value !== 'object') return false;
-        const lesson = value as Partial<Lesson>;
-        return typeof lesson.title === 'string' && typeof lesson.start === 'string' && typeof lesson.end === 'string'
-          && ['planned', 'moved', 'cancelled'].includes(lesson.status as string);
+      const cloneLessons = (value) => value.map((lesson) => ({ ...lesson }));
+      const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2));
+      const wordForEvents = (amount) => amount === 1 ? 'событие' : amount > 1 && amount < 5 ? 'события' : 'событий';
+      const wordForWindows = (amount) => amount === 1 ? 'окно' : amount > 1 && amount < 5 ? 'окна' : 'окон';
+      const formatDate = (value) => {
+        if (!value) return 'день без даты';
+        return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
       };
-      const readLessons = (): Lesson[] => {
+      const formatMinutes = (minutes) => {
+        if (!minutes) return '0 мин';
+        const hours = Math.floor(minutes / 60);
+        const rest = minutes % 60;
+        return (hours ? hours + ' ч' : '') + (hours && rest ? ' ' : '') + (rest ? rest + ' мин' : '');
+      };
+      const safeFileName = (value) => value.trim().replace(/[^a-zа-яё0-9]+/gi, '-').replace(/^-|-$/g, '') || 'dayflow';
+
+      const fallbackDocument = () => ({
+        version: 2,
+        date: today,
+        label: '',
+        lessons: cloneLessons(samples.study),
+      });
+      const readDocument = () => {
         try {
-          const stored = JSON.parse(localStorage.getItem('dayflow-lessons') || 'null');
-          if (Array.isArray(stored) && stored.every(isLesson)) return stored;
+          const stored = localStorage.getItem('dayflow-document');
+          if (stored) return parseDocument(stored);
+          const legacy = JSON.parse(localStorage.getItem('dayflow-lessons') || 'null');
+          if (Array.isArray(legacy)) return { version: 2, date: today, label: '', lessons: legacy };
         } catch {
           // corrupted local data should not prevent the editor from opening
         }
-        return cloneLessons(fallback);
-      };
-      const makeId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      const wordForLessons = (amount: number) => {
-        if (amount === 1) return 'занятие';
-        if (amount > 1 && amount < 5) return 'занятия';
-        return 'занятий';
+        return fallbackDocument();
       };
 
-      let lessons: Lesson[] = readLessons();
+      let documentState = readDocument();
       let style = localStorage.getItem('dayflow-style') || 'clean';
+      let mode = localStorage.getItem('dayflow-mode') || 'plan';
+
       const root = document.querySelector('#lessons');
-      const card = document.querySelector('#card-lessons');
+      const emptyEditor = document.querySelector('#empty-editor');
+      const summary = document.querySelector('#summary');
+      const conflict = document.querySelector('#conflict');
+      const card = document.querySelector('#preview-card');
+      const cardLessons = document.querySelector('#card-lessons');
+      const cardSummary = document.querySelector('#card-summary');
       const count = document.querySelector('#count');
       const repo = document.querySelector('#repo');
-      const themeButton = document.querySelector('#theme');
       const saveStatus = document.querySelector('#save-status');
+      const dateInput = document.querySelector('#date');
+      const labelInput = document.querySelector('#label');
 
-      const save = () => localStorage.setItem('dayflow-lessons', JSON.stringify(lessons));
-      const download = (data: BlobPart, name: string, type: string) => {
+      const save = () => localStorage.setItem('dayflow-document', serializeDocument(documentState));
+      const download = (data, name, type) => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([data], { type }));
         link.download = name;
         link.click();
         URL.revokeObjectURL(link.href);
       };
-      const safeFileName = (value: string) => value.trim().replace(/[^a-zа-яё0-9]+/gi, '-').replace(/^-|-$/g, '') || 'занятие';
-      const showSaved = () => {
-        saveStatus.textContent = 'карточка сохранена';
-        window.setTimeout(() => { saveStatus.textContent = ''; }, 2200);
+      const showSaved = (message) => {
+        saveStatus.textContent = message;
+        window.setTimeout(() => { saveStatus.textContent = ''; }, 2400);
+      };
+      const updateDerived = () => {
+        const derived = summarizeSchedule(documentState.lessons);
+        const free = derived.freeWindows.length;
+        summary.innerHTML = '<span><strong>' + derived.activeCount + '</strong> ' + wordForEvents(derived.activeCount) + '</span>'
+          + '<span><strong>' + formatMinutes(derived.totalMinutes) + '</strong> в расписании</span>'
+          + '<span><strong>' + free + '</strong> ' + wordForWindows(free) + '</span>';
+        if (derived.conflicts.length) {
+          conflict.hidden = false;
+          conflict.textContent = 'есть пересечение: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + ' · проверьте время';
+        } else {
+          conflict.hidden = true;
+          conflict.textContent = '';
+        }
+        emptyEditor.hidden = documentState.lessons.length > 0;
       };
 
       const renderCard = () => {
-        const active = lessons.filter((lesson) => lesson.status !== 'cancelled');
-        count.textContent = `${active.length} ${wordForLessons(active.length)}`;
-        card.replaceChildren();
+        const derived = summarizeSchedule(documentState.lessons);
+        const active = sortLessons(activeLessons(documentState.lessons));
+        count.textContent = derived.activeCount + ' ' + wordForEvents(derived.activeCount);
+        card.dataset.style = style;
+        card.dataset.mode = mode;
+        document.querySelector('#card-date').textContent = formatDate(documentState.date);
+        document.querySelector('#card-label').textContent = documentState.label.trim() || 'dayflow';
+        cardSummary.innerHTML = '<span>' + formatMinutes(derived.totalMinutes) + ' занято</span><span>' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length) + '</span>';
+        cardLessons.replaceChildren();
+
         if (!active.length) {
           const empty = document.createElement('p');
           empty.className = 'empty';
-          empty.textContent = 'нет занятий';
-          card.append(empty);
-        } else {
+          empty.textContent = 'нет событий';
+          cardLessons.append(empty);
+        } else if (mode === 'plan') {
           active.forEach((lesson) => {
             const line = document.createElement('div');
             line.className = 'card-line';
             const time = document.createElement('time');
             time.textContent = lesson.start;
-            const title = document.createElement('span');
+            const body = document.createElement('div');
+            const title = document.createElement('strong');
             title.textContent = lesson.title || 'без названия';
-            line.append(time, title);
-            card.append(line);
+            body.append(title);
+            if (lesson.note) {
+              const note = document.createElement('small');
+              note.textContent = lesson.note;
+              body.append(note);
+            }
+            if (lesson.status === 'moved') {
+              const mark = document.createElement('em');
+              mark.textContent = 'перенесли';
+              body.append(mark);
+            }
+            line.append(time, body);
+            cardLessons.append(line);
+          });
+        } else {
+          const blocks = [];
+          active.forEach((lesson, index) => {
+            blocks.push({ kind: 'busy', start: lesson.start, end: lesson.end, order: index });
+            const window = derived.freeWindows[index];
+            if (window) blocks.push({ kind: 'free', start: window.start, end: window.end, order: index + 0.5 });
+          });
+          blocks.sort((a, b) => a.start.localeCompare(b.start) || a.order - b.order).forEach((block) => {
+            const line = document.createElement('div');
+            line.className = 'card-line ' + block.kind;
+            const time = document.createElement('time');
+            time.textContent = block.start;
+            const body = document.createElement('div');
+            const title = document.createElement('strong');
+            title.textContent = block.kind === 'free' ? 'свободно' : 'занято';
+            body.append(title);
+            const range = document.createElement('small');
+            range.textContent = block.start + '–' + block.end;
+            body.append(range);
+            line.append(time, body);
+            cardLessons.append(line);
           });
         }
+
         if (repo.checked) {
           const link = document.createElement('a');
           link.className = 'repo-link';
@@ -178,44 +304,106 @@ import '../styles/global.css';
           link.target = '_blank';
           link.rel = 'noreferrer';
           link.textContent = 'github.com/chebaturkin/dayflow';
-          card.append(link);
+          cardLessons.append(link);
         }
-        card.parentElement.dataset.style = style;
+      };
+
+      const renderRows = () => {
+        root.replaceChildren();
+        sortLessons(documentState.lessons).forEach((lesson) => {
+          const row = document.createElement('article');
+          row.className = 'lesson ' + lesson.status;
+          row.innerHTML = '<div class="time-fields"><label><span>с</span><input class="start" type="time" aria-label="начало" /></label><label><span>до</span><input class="end" type="time" aria-label="конец" /></label></div>'
+            + '<div class="lesson-main"><input class="title" aria-label="название события" placeholder="название события" /><input class="note" aria-label="заметка" placeholder="заметка для себя (необязательно)" /></div>'
+            + '<select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесли</option><option value="cancelled">отменили</option></select>'
+            + '<div class="row-actions"><button class="duplicate" type="button" aria-label="дублировать">+</button><button class="ics" type="button">ICS</button><button class="remove" type="button" aria-label="удалить">×</button></div>';
+          const start = row.querySelector('.start');
+          const end = row.querySelector('.end');
+          const title = row.querySelector('.title');
+          const note = row.querySelector('.note');
+          const status = row.querySelector('.status');
+          start.value = lesson.start;
+          end.value = lesson.end;
+          title.value = lesson.title;
+          note.value = lesson.note || '';
+          status.value = lesson.status;
+          const update = () => {
+            lesson.start = start.value || '09:00';
+            lesson.end = end.value || '10:00';
+            lesson.title = title.value;
+            lesson.note = note.value;
+            lesson.status = status.value;
+            row.className = 'lesson ' + lesson.status;
+            save();
+            updateDerived();
+            renderCard();
+          };
+          start.onchange = update;
+          end.onchange = update;
+          title.oninput = update;
+          note.oninput = update;
+          status.onchange = update;
+          row.querySelector('.duplicate').onclick = () => {
+            documentState.lessons.push({ ...lesson, id: makeId(), title: lesson.title + ' · копия' });
+            save();
+            renderRows();
+            updateDerived();
+            renderCard();
+          };
+          row.querySelector('.remove').onclick = () => {
+            documentState.lessons = documentState.lessons.filter((item) => item.id !== lesson.id);
+            save();
+            renderRows();
+            updateDerived();
+            renderCard();
+          };
+          row.querySelector('.ics').onclick = () => download(lessonsToIcs(documentState.date, [lesson]), safeFileName(lesson.title) + '.ics', 'text/calendar');
+          root.append(row);
+        });
       };
 
       const render = () => {
-        lessons.sort((a, b) => a.start.localeCompare(b.start));
-        root.replaceChildren();
-        lessons.forEach((lesson, index) => {
-          const row = document.createElement('article');
-          row.className = `lesson ${lesson.status}`;
-          row.innerHTML = '<time></time><input aria-label="название занятия" /><select aria-label="статус занятия"><option value="planned">по плану</option><option value="moved">перенесли</option><option value="cancelled">отменили</option></select><button class="ics" type="button" aria-label="скачать календарь">календарь</button><button class="remove" type="button" aria-label="удалить">×</button>';
-          const time = row.querySelector('time');
-          time.innerHTML = `${lesson.start}<small>${lesson.end}</small>`;
-          const input = row.querySelector('input');
-          const select = row.querySelector('select');
-          input.value = lesson.title;
-          select.value = lesson.status;
-          input.oninput = () => { lesson.title = input.value; save(); renderCard(); };
-          select.onchange = () => { lesson.status = select.value; save(); render(); };
-          row.querySelector('.remove').onclick = () => { lessons.splice(index, 1); save(); render(); };
-          row.querySelector('.ics').onclick = () => download(lessonToIcs(new Date().toISOString().slice(0, 10), lesson), `${safeFileName(lesson.title)}.ics`, 'text/calendar');
-          root.append(row);
-        });
+        dateInput.value = documentState.date;
+        labelInput.value = documentState.label;
+        repo.checked = localStorage.getItem('dayflow-repo') !== 'false';
+        document.querySelectorAll('.mode').forEach((button) => button.classList.toggle('active', button.dataset.mode === mode));
+        document.querySelectorAll('.style').forEach((button) => button.classList.toggle('active', button.dataset.style === style));
+        renderRows();
+        updateDerived();
         renderCard();
       };
 
-      const setTheme = (theme: 'light' | 'dark') => {
+      const setTheme = (theme) => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        themeButton.textContent = theme === 'dark' ? 'светлая тема' : 'тёмная тема';
+        document.querySelector('#theme').textContent = theme === 'dark' ? 'светлая тема' : 'тёмная тема';
         localStorage.setItem('dayflow-theme', theme);
       };
-      const storedTheme = localStorage.getItem('dayflow-theme');
-      setTheme(storedTheme === 'dark' ? 'dark' : 'light');
 
-      repo.checked = localStorage.getItem('dayflow-repo') !== 'false';
+      document.querySelector('#add').onclick = () => {
+        documentState.lessons.push({ id: makeId(), title: '', start: '16:00', end: '17:00', status: 'planned' });
+        save();
+        renderRows();
+        updateDerived();
+        renderCard();
+        root.lastElementChild?.querySelector('.title')?.focus();
+      };
+      document.querySelector('#preset').onchange = (event) => {
+        const value = event.target.value;
+        if (!value) return;
+        documentState.lessons = value === 'empty' ? [] : cloneLessons(samples[value]);
+        save();
+        render();
+        event.target.value = '';
+      };
+      document.querySelectorAll('.mode').forEach((button) => {
+        button.onclick = () => {
+          mode = button.dataset.mode;
+          localStorage.setItem('dayflow-mode', mode);
+          renderCard();
+          document.querySelectorAll('.mode').forEach((item) => item.classList.toggle('active', item === button));
+        };
+      });
       document.querySelectorAll('.style').forEach((button) => {
-        button.classList.toggle('active', button.dataset.style === style);
         button.onclick = () => {
           style = button.dataset.style;
           localStorage.setItem('dayflow-style', style);
@@ -223,20 +411,45 @@ import '../styles/global.css';
           renderCard();
         };
       });
-      document.querySelector('#add').onclick = () => {
-        lessons.push({ id: makeId(), title: 'новое занятие', start: '16:00', end: '17:30', status: 'planned' });
-        save();
-        render();
+      dateInput.onchange = () => { documentState.date = dateInput.value || today; save(); renderCard(); };
+      labelInput.oninput = () => { documentState.label = labelInput.value; save(); renderCard(); };
+      repo.onchange = () => { localStorage.setItem('dayflow-repo', String(repo.checked)); renderCard(); };
+      document.querySelector('#theme').onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
+      document.querySelector('#ics').onclick = () => {
+        download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar');
+        showSaved('день сохранён в ICS');
       };
-      document.querySelector('#preset').onchange = (event) => {
-        const value = event.target.value;
-        if (value === 'empty') lessons = [];
-        if (value === 'study' || value === 'work') lessons = cloneLessons(samples[value]);
-        if (value) { save(); render(); }
+      document.querySelector('#export-json').onclick = () => {
+        download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json');
+        showSaved('JSON сохранён');
+      };
+      document.querySelector('#import').onclick = () => document.querySelector('#file').click();
+      document.querySelector('#file').onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        try {
+          documentState = parseDocument(await file.text());
+          save();
+          render();
+          showSaved('расписание загружено');
+        } catch (error) {
+          showSaved(error.message || 'не удалось загрузить файл');
+        }
         event.target.value = '';
       };
-      themeButton.onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
-      repo.onchange = () => { localStorage.setItem('dayflow-repo', String(repo.checked)); renderCard(); };
+      document.querySelector('#reset').onclick = () => {
+        documentState = fallbackDocument();
+        save();
+        render();
+        showSaved('демо-расписание восстановлено');
+      };
+      window.addEventListener('keydown', (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+          event.preventDefault();
+          document.querySelector('#add').click();
+        }
+      });
+
       document.querySelector('#png').onclick = () => {
         const canvas = document.createElement('canvas');
         canvas.width = 1600;
@@ -246,47 +459,67 @@ import '../styles/global.css';
         const ink = dark ? '#f4f7f2' : '#17211b';
         const muted = dark ? '#c3d0c7' : '#667169';
         const line = dark ? '#466050' : '#d7ded8';
+        const accent = dark ? '#a8e0b9' : '#147a50';
         context.fillStyle = dark ? '#17251d' : '#f7f7f2';
         context.fillRect(0, 0, canvas.width, canvas.height);
         if (style === 'lines') {
           context.strokeStyle = line;
-          for (let y = 0; y < canvas.height; y += 72) { context.beginPath(); context.moveTo(80, y); context.lineTo(1520, y); context.stroke(); }
+          for (let y = 0; y < canvas.height; y += 72) {
+            context.beginPath();
+            context.moveTo(80, y);
+            context.lineTo(1520, y);
+            context.stroke();
+          }
         }
-        context.fillStyle = ink;
-        context.font = '600 92px system-ui';
-        context.fillText('карточка дня', 120, 220);
-        context.fillStyle = muted;
-        context.font = '400 34px system-ui';
-        context.fillText('собрано в dayflow', 120, 292);
-        let y = 480;
-        const active = lessons.filter((lesson) => lesson.status !== 'cancelled');
+        const derived = summarizeSchedule(documentState.lessons);
+        const active = sortLessons(activeLessons(documentState.lessons));
+        const draw = (text, x, y, font, color) => {
+          context.font = font;
+          context.fillStyle = color;
+          context.fillText(text, x, y);
+        };
+        draw(mode === 'availability' ? 'доступность' : 'план дня', 120, 190, '600 92px system-ui', ink);
+        draw(formatDate(documentState.date), 120, 258, '400 34px system-ui', muted);
+        draw(documentState.label.trim() || 'dayflow', 120, 310, '400 30px monospace', muted);
+        draw(formatMinutes(derived.totalMinutes) + ' занято · ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length), 120, 410, '400 34px system-ui', accent);
+        let y = 540;
         if (!active.length) {
-          context.fillText('нет занятий', 120, y);
-        } else {
+          draw('нет событий', 120, y, '400 42px system-ui', muted);
+        } else if (mode === 'plan') {
           active.forEach((lesson) => {
             context.strokeStyle = line;
             context.beginPath();
             context.moveTo(120, y + 42);
             context.lineTo(1480, y + 42);
             context.stroke();
-            context.fillStyle = dark ? '#a8e0b9' : '#147a50';
-            context.font = '400 36px monospace';
-            context.fillText(lesson.start, 120, y);
-            context.fillStyle = ink;
-            context.font = '500 56px system-ui';
-            context.fillText(lesson.title || 'без названия', 390, y);
+            draw(lesson.start, 120, y, '400 36px monospace', accent);
+            draw(lesson.title || 'без названия', 390, y, '500 56px system-ui', ink);
+            if (lesson.status === 'moved') draw('перенесли', 390, y + 42, '400 24px system-ui', muted);
             y += 170;
           });
+        } else {
+          const blocks = [];
+          active.forEach((lesson, index) => {
+            blocks.push({ kind: 'busy', start: lesson.start, end: lesson.end });
+            if (derived.freeWindows[index]) blocks.push({ kind: 'free', start: derived.freeWindows[index].start, end: derived.freeWindows[index].end });
+          });
+          blocks.sort((a, b) => a.start.localeCompare(b.start)).forEach((block) => {
+            context.strokeStyle = line;
+            context.beginPath();
+            context.moveTo(120, y + 42);
+            context.lineTo(1480, y + 42);
+            context.stroke();
+            draw(block.start + '–' + block.end, 120, y, '400 36px monospace', accent);
+            draw(block.kind === 'free' ? 'свободно' : 'занято', 480, y, '500 56px system-ui', ink);
+            y += 150;
+          });
         }
-        if (repo.checked) {
-          context.fillStyle = muted;
-          context.font = '400 26px monospace';
-          context.fillText('github.com/chebaturkin/dayflow', 120, 1840);
-        }
-        canvas.toBlob((blob) => blob && download(blob, 'dayflow-card.png', 'image/png'), 'image/png');
-        showSaved();
+        if (repo.checked) draw('github.com/chebaturkin/dayflow', 120, 1840, '400 26px monospace', muted);
+        canvas.toBlob((blob) => blob && download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'), 'image/png');
+        showSaved('PNG сохранён');
       };
 
+      setTheme(localStorage.getItem('dayflow-theme') === 'dark' ? 'dark' : 'light');
       render();
     </script>
   </body>
