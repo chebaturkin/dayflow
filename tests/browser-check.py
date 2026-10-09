@@ -20,6 +20,9 @@ with sync_playwright() as p:
 
     assert page.locator(".lesson").count() == 3
     assert "2 окна" in page.locator("#summary").inner_text()
+    assert page.locator("h1").inner_text() == "соберите план дня"
+    assert page.locator(".intro-note").count() == 0
+    assert "данные остаются на устройстве" in page.locator(".hint").inner_text()
     remove_dev_toolbar(page)
     page.screenshot(path=str(PUBLIC / "preview-light.png"), full_page=True)
 
