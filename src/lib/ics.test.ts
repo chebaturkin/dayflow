@@ -19,3 +19,13 @@ it('serializes the active day and excludes cancelled lessons', () => {
   expect(ics).not.toContain('SUMMARY:cancelled');
   expect(ics).toContain('DESCRIPTION:bring notes');
 });
+
+it('escapes carriage returns in text properties', () => {
+  const ics = lessonToIcs('2026-10-06', {
+    id: 'safe-id', title: 'название\rX', start: '09:00', end: '10:00',
+    status: 'planned', note: 'заметка\rX',
+  });
+  expect(ics).toContain('SUMMARY:название\\nX');
+  expect(ics).toContain('DESCRIPTION:заметка\\nX');
+  expect(ics).not.toContain('\rX');
+});

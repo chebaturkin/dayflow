@@ -28,4 +28,22 @@ describe('portable schedule documents', () => {
       lessons: [{ ...document.lessons[0], start: '11:00', end: '10:00' }],
     }))).toThrow(DocumentParseError);
   });
+
+  it('rejects documents outside import limits', () => {
+    expect(() => parseDocument(JSON.stringify({ ...document, date: '2026-02-31' }))).toThrow(DocumentParseError);
+    expect(() => parseDocument(JSON.stringify({
+      ...document,
+      lessons: [{ ...document.lessons[0], title: 'x'.repeat(241) }],
+    }))).toThrow(DocumentParseError);
+    expect(() => parseDocument(JSON.stringify({
+      ...document,
+      lessons: [{ ...document.lessons[0], id: 'event\nuid' }],
+    }))).toThrow(DocumentParseError);
+    expect(() => parseDocument(JSON.stringify({
+      ...document,
+      lessons: Array.from({ length: 201 }, (_, index) => ({
+        ...document.lessons[0], id: `event-${index}`,
+      })),
+    }))).toThrow(DocumentParseError);
+  });
 });
