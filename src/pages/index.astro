@@ -1,23 +1,32 @@
 ---
 import '../styles/global.css';
+
+const base = import.meta.env.BASE_URL;
+const site = import.meta.env.SITE ?? 'https://chebaturkin.github.io';
+const pageUrl = new URL(base, site).toString();
 ---
 
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content="dayflow — план дня и свободное время в одной картинке. Без регистрации." />
-    <title>dayflow — план дня</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="dayflow помогает собрать план дня и сохранить его одной картинкой. всё остаётся в браузере." />
+    <meta name="theme-color" content="#f5f6f1" />
+    <meta property="og:title" content="dayflow — план дня одной картинкой" />
+    <meta property="og:description" content="соберите расписание, покажите план или только свободное время. без регистрации." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={pageUrl} />
+    <title>dayflow — план дня одной картинкой</title>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
         <div class="brand">
-          <a class="wordmark" href="/">dayflow</a>
+          <a class="wordmark" href={base}>dayflow</a>
           <span>план дня в одной картинке</span>
         </div>
         <nav aria-label="навигация">
-          <a href="#export">к карточке</a>
+          <a href="#export">к готовой карточке</a>
           <button id="theme" type="button" aria-label="включить тёмную тему">включить тёмную тему</button>
         </nav>
       </header>
@@ -26,27 +35,27 @@ import '../styles/global.css';
         <div>
           <p class="eyebrow">всё остаётся в браузере</p>
           <h1>соберите план дня</h1>
-          <p class="lede">запишите дела и сохраните план. При необходимости покажите только свободное время</p>
+          <p class="lede">запишите дела, выберите вид карточки и сохраните её. можно оставить только свободное время</p>
         </div>
         <div class="intro-note">
           <span class="intro-note-mark" aria-hidden="true">↳</span>
-          <p>файл собирается на вашем устройстве. Расписание никуда не отправляется</p>
+          <p>карточка собирается на вашем устройстве. расписание никуда не отправляется</p>
         </div>
       </section>
 
-      <section class="document-bar" aria-label="параметры дня">
+      <section class="document-bar" aria-label="данные дня">
         <label class="date-field">
           <span>дата</span>
           <input id="date" type="date" />
         </label>
         <label class="label-field">
           <span>название дня</span>
-          <input id="label" type="text" maxlength="48" placeholder="например, рабочий день" />
+          <input id="label" type="text" maxlength="80" placeholder="например, рабочий день" />
         </label>
         <div class="document-actions">
-          <button id="import" class="quiet-action" type="button">загрузить JSON</button>
-          <button id="export-json" class="quiet-action" type="button">сохранить копию</button>
-          <button id="reset" class="quiet-action" type="button">начать заново</button>
+          <button id="import" class="quiet-action" type="button">открыть JSON</button>
+          <button id="export-json" class="quiet-action" type="button">сохранить JSON</button>
+          <button id="reset" class="quiet-action" type="button">вернуть пример</button>
           <input id="file" type="file" accept="application/json,.json" hidden />
         </div>
       </section>
@@ -55,17 +64,17 @@ import '../styles/global.css';
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
             <div>
-              <p class="eyebrow">ваш день</p>
+              <p class="eyebrow">что запланировано</p>
               <h2 id="lessons-heading">расписание</h2>
             </div>
             <div class="head-actions">
               <label class="preset-label">
                 <span class="sr-only">выбрать пример</span>
                 <select id="preset" aria-label="выбрать пример">
-                  <option value="">заполнить примером</option>
+                  <option value="">взять пример</option>
                   <option value="study">учебный день</option>
                   <option value="work">рабочий день</option>
-                  <option value="empty">чистый лист</option>
+                  <option value="empty">начать с пустого листа</option>
                 </select>
               </label>
               <button id="add" class="text-action" type="button">добавить событие <span aria-hidden="true">→</span></button>
@@ -75,20 +84,20 @@ import '../styles/global.css';
           <div id="summary" class="summary-strip" aria-live="polite"></div>
           <div id="conflict" class="conflict" role="status" aria-live="polite" hidden></div>
           <div id="lessons"></div>
-          <p id="empty-editor" class="empty-editor" hidden>добавьте событие — оно появится в карточке</p>
-          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> — добавить событие</div>
+          <p id="empty-editor" class="empty-editor" hidden>добавьте первое событие — оно сразу появится в карточке</p>
+          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> — быстро добавить событие</div>
         </section>
 
         <aside class="export" id="export" aria-labelledby="preview-heading">
           <div class="export-head">
             <div>
-              <p class="eyebrow">карточка дня</p>
+              <p class="eyebrow">что отправить</p>
               <h2 id="preview-heading">предпросмотр</h2>
             </div>
             <span class="count" id="count">0 событий</span>
           </div>
 
-          <div class="mode-switch" role="group" aria-label="что показать в карточке">
+          <div class="mode-switch" role="group" aria-label="содержание карточки">
             <button data-mode="plan" class="mode active" type="button">план дня</button>
             <button data-mode="availability" class="mode" type="button">свободное время</button>
           </div>
@@ -104,8 +113,8 @@ import '../styles/global.css';
           </div>
 
           <div class="export-options">
-            <p class="option-label">оформление</p>
-            <div class="styles" role="group" aria-label="оформление карточки">
+            <p class="option-label">как оформить</p>
+            <div class="styles" role="group" aria-label="варианты оформления">
               <button data-style="clean" class="style active" type="button">
                 <span class="mini-card mini-clean" aria-hidden="true"></span>
                 <span>бумага</span>
@@ -116,20 +125,20 @@ import '../styles/global.css';
               </button>
               <button data-style="lines" class="style" type="button">
                 <span class="mini-card mini-lines" aria-hidden="true"></span>
-                <span>в линию</span>
+              <span>строки</span>
               </button>
             </div>
             <label class="check">
               <input id="repo" type="checkbox" checked />
-              <span>показать ссылку на проект</span>
+              <span>добавить ссылку на GitHub</span>
             </label>
           </div>
 
           <div class="export-actions">
-            <button id="png" class="primary" type="button">сохранить картинку (PNG)</button>
+            <button id="png" class="primary" type="button">сохранить карточку (PNG)</button>
             <button id="ics" class="secondary" type="button">скачать события (ICS)</button>
           </div>
-          <p class="hint">файл создаётся на устройстве — данные не отправляются</p>
+          <p class="hint">файл готовится в браузере. расписание никуда не отправляется</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         </aside>
       </div>
@@ -159,6 +168,8 @@ import '../styles/global.css';
       const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2));
       const wordForEvents = (amount) => amount === 1 ? 'событие' : amount > 1 && amount < 5 ? 'события' : 'событий';
       const wordForWindows = (amount) => amount === 1 ? 'окно' : amount > 1 && amount < 5 ? 'окна' : 'окон';
+      const MAX_TITLE_LENGTH = 240;
+      const MAX_NOTE_LENGTH = 500;
       const formatDate = (value) => {
         if (!value) return 'дата не указана';
         return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
@@ -226,7 +237,7 @@ import '../styles/global.css';
           + '<span>свободно <strong>' + free + '</strong> ' + wordForWindows(free) + '</span>';
         if (derived.conflicts.length) {
           conflict.hidden = false;
-          conflict.textContent = 'время пересекается: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + '. Проверьте события';
+          conflict.textContent = 'время пересекается: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + '. проверьте события';
         } else {
           conflict.hidden = true;
           conflict.textContent = '';
@@ -248,7 +259,7 @@ import '../styles/global.css';
         if (!active.length) {
           const empty = document.createElement('p');
           empty.className = 'empty';
-          empty.textContent = 'пока нет событий';
+          empty.textContent = 'пока нет событий — добавьте первое';
           cardLessons.append(empty);
         } else if (mode === 'plan') {
           active.forEach((lesson) => {
@@ -258,7 +269,7 @@ import '../styles/global.css';
             time.textContent = lesson.start;
             const body = document.createElement('div');
             const title = document.createElement('strong');
-            title.textContent = lesson.title || 'название не указано';
+            title.textContent = lesson.title || 'название пока не задано';
             body.append(title);
             if (lesson.note) {
               const note = document.createElement('small');
@@ -303,7 +314,7 @@ import '../styles/global.css';
           link.href = 'https://github.com/chebaturkin/dayflow';
           link.target = '_blank';
           link.rel = 'noreferrer';
-          link.textContent = 'github.com/chebaturkin/dayflow';
+          link.textContent = 'открыть репозиторий на GitHub';
           cardLessons.append(link);
         }
       };
@@ -314,7 +325,7 @@ import '../styles/global.css';
           const row = document.createElement('article');
           row.className = 'lesson ' + lesson.status;
           row.innerHTML = '<div class="time-fields"><label><span>с</span><input class="start" type="time" aria-label="начало" /></label><label><span>до</span><input class="end" type="time" aria-label="конец" /></label></div>'
-            + '<div class="lesson-main"><input class="title" aria-label="название события" placeholder="название события" /><input class="note" aria-label="заметка" placeholder="заметка для себя (необязательно)" /></div>'
+            + '<div class="lesson-main"><input class="title" maxlength="' + MAX_TITLE_LENGTH + '" aria-label="название события" placeholder="название события" /><input class="note" maxlength="' + MAX_NOTE_LENGTH + '" aria-label="заметка" placeholder="заметка (необязательно)" /></div>'
             + '<select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесено</option><option value="cancelled">отменено</option></select>'
             + '<div class="row-actions"><button class="duplicate" type="button" aria-label="создать копию">+</button><button class="ics" type="button">ICS</button><button class="remove" type="button" aria-label="удалить">×</button></div>';
           const start = row.querySelector('.start');
@@ -344,7 +355,7 @@ import '../styles/global.css';
           note.oninput = update;
           status.onchange = update;
           row.querySelector('.duplicate').onclick = () => {
-            documentState.lessons.push({ ...lesson, id: makeId(), title: lesson.title + ' · копия' });
+            documentState.lessons.push({ ...lesson, id: makeId(), title: (lesson.title + ' · копия').slice(0, MAX_TITLE_LENGTH) });
             save();
             renderRows();
             updateDerived();
@@ -366,8 +377,16 @@ import '../styles/global.css';
         dateInput.value = documentState.date;
         labelInput.value = documentState.label;
         repo.checked = localStorage.getItem('dayflow-repo') !== 'false';
-        document.querySelectorAll('.mode').forEach((button) => button.classList.toggle('active', button.dataset.mode === mode));
-        document.querySelectorAll('.style').forEach((button) => button.classList.toggle('active', button.dataset.style === style));
+        document.querySelectorAll('.mode').forEach((button) => {
+          const active = button.dataset.mode === mode;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        document.querySelectorAll('.style').forEach((button) => {
+          const active = button.dataset.style === style;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
         renderRows();
         updateDerived();
         renderCard();
@@ -403,14 +422,22 @@ import '../styles/global.css';
           mode = button.dataset.mode;
           localStorage.setItem('dayflow-mode', mode);
           renderCard();
-          document.querySelectorAll('.mode').forEach((item) => item.classList.toggle('active', item === button));
+          document.querySelectorAll('.mode').forEach((item) => {
+            const active = item === button;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-pressed', String(active));
+          });
         };
       });
       document.querySelectorAll('.style').forEach((button) => {
         button.onclick = () => {
           style = button.dataset.style;
           localStorage.setItem('dayflow-style', style);
-          document.querySelectorAll('.style').forEach((item) => item.classList.toggle('active', item === button));
+          document.querySelectorAll('.style').forEach((item) => {
+            const active = item === button;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-pressed', String(active));
+          });
           renderCard();
         };
       });
@@ -420,11 +447,11 @@ import '../styles/global.css';
       document.querySelector('#theme').onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
       document.querySelector('#ics').onclick = () => {
         download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar');
-        showSaved('день сохранён как ICS-файл');
+        showSaved('ICS-файл сохранён');
       };
       document.querySelector('#export-json').onclick = () => {
         download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json');
-        showSaved('копия сохранена');
+        showSaved('JSON сохранён');
       };
       document.querySelector('#import').onclick = () => document.querySelector('#file').click();
       document.querySelector('#file').onchange = async (event) => {
@@ -434,9 +461,9 @@ import '../styles/global.css';
           documentState = parseDocument(await file.text());
           save();
           render();
-          showSaved('расписание загружено');
+          showSaved('расписание открыто');
         } catch (error) {
-          showSaved(error.message || 'файл не удалось открыть. Выберите JSON из dayflow');
+          showSaved(error instanceof Error ? error.message : 'не получилось открыть файл. выберите JSON из dayflow');
         }
         event.target.value = '';
       };
@@ -508,7 +535,7 @@ import '../styles/global.css';
         const statusFont = '400 24px system-ui';
         const bodyWidth = 1090;
         const planRows = active.map((lesson) => {
-          const title = wrap(lesson.title || 'название не указано', titleFont, bodyWidth);
+          const title = wrap(lesson.title || 'название пока не задано', titleFont, bodyWidth);
           const note = lesson.note ? wrap(lesson.note, noteFont, bodyWidth) : [];
           const status = lesson.status === 'moved' ? ['перенесено'] : [];
           const contentHeight = title.length * 66
@@ -555,7 +582,7 @@ import '../styles/global.css';
         draw('занято ' + formatMinutes(derived.totalMinutes) + ' · свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length), 120, 410, '400 34px system-ui', colors.accent);
         let y = 540;
         if (!active.length) {
-          draw('пока нет событий', 120, y, '400 42px system-ui', colors.muted);
+          draw('пока нет событий — добавьте первое', 120, y, '400 42px system-ui', colors.muted);
         } else if (mode === 'plan') {
           planRows.forEach((row) => {
             const { lesson, title, note, status } = row;
@@ -590,10 +617,10 @@ import '../styles/global.css';
             y += 150;
           });
         }
-        if (repo.checked) draw('github.com/chebaturkin/dayflow', 120, repoY, '400 26px monospace', colors.muted);
+        if (repo.checked) draw('GitHub · chebaturkin/dayflow', 120, repoY, '400 26px monospace', colors.muted);
         draw('создано в dayflow', 120, footerY, '400 24px system-ui', colors.muted);
         canvas.toBlob((blob) => blob && download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'), 'image/png');
-        showSaved('картинка сохранена');
+        showSaved('PNG сохранён');
       };
 
       setTheme(localStorage.getItem('dayflow-theme') === 'dark' ? 'dark' : 'light');

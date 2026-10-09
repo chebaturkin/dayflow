@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page(viewport={"width": 1440, "height": 1000})
-    page.goto(os.environ.get("DAYFLOW_URL", "http://127.0.0.1:4321"), wait_until="networkidle")
+    page.goto(os.environ.get("DAYFLOW_URL", "http://127.0.0.1:4321/dayflow"), wait_until="networkidle")
     failures = []
     for width in [1440, 1024, 900, 840, 768, 640, 390, 330, 320]:
         page.set_viewport_size({"width": width, "height": 1000})
