@@ -454,9 +454,9 @@ import '../styles/global.css';
         canvas.height = 2000;
         let context = canvas.getContext('2d');
         const palettes = {
-          clean: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
-          dark: { paper: '#17251d', ink: '#f4f7f2', muted: '#c3d0c7', line: '#466050', accent: '#a8e0b9', accentSoft: '#243f2e' },
-          lines: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
+          clean: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
+          dark: { paper: '#30263a', ink: '#fbf1ee', muted: '#cbbbc3', line: '#4a3a50', accent: '#e6a6a3', accentSoft: '#4a2f3a' },
+          lines: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
         };
         const colors = palettes[style] || palettes.clean;
         const wrap = (value, font, maxWidth) => {

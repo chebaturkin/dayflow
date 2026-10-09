@@ -23,6 +23,9 @@ with sync_playwright() as p:
     assert page.locator("h1").inner_text() == "соберите план дня"
     assert page.locator(".intro-note").count() == 0
     assert "данные остаются на устройстве" in page.locator(".hint").inner_text()
+    assert page.locator("body").evaluate("(element) => getComputedStyle(element).backgroundColor") == "rgb(248, 241, 237)"
+    assert page.locator(".planner").evaluate("(element) => getComputedStyle(element).borderRadius") == "24px"
+    assert page.locator(".preview-card").evaluate("(element) => getComputedStyle(element).borderRadius") == "16px"
     remove_dev_toolbar(page)
     page.screenshot(path=str(PUBLIC / "preview-light.png"), full_page=True)
 
