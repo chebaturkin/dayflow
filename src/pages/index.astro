@@ -10,8 +10,8 @@ const pageUrl = new URL(base, site).toString();
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="dayflow помогает собрать план дня и сохранить его одной картинкой. всё остаётся в браузере." />
-    <meta name="theme-color" content="#f5f6f1" />
+    <meta name="description" content="dayflow помогает собрать план дня и сохранить его одной картинкой. данные остаются на устройстве." />
+    <meta name="theme-color" content="#f8f1ed" />
     <meta property="og:title" content="dayflow — план дня одной картинкой" />
     <meta property="og:description" content="соберите расписание, покажите план или только свободное время. без регистрации." />
     <meta property="og:type" content="website" />
@@ -33,13 +33,8 @@ const pageUrl = new URL(base, site).toString();
 
       <section class="intro">
         <div>
-          <p class="eyebrow">всё остаётся в браузере</p>
           <h1>соберите план дня</h1>
           <p class="lede">запишите дела, выберите вид карточки и сохраните её. можно оставить только свободное время</p>
-        </div>
-        <div class="intro-note">
-          <span class="intro-note-mark" aria-hidden="true">↳</span>
-          <p>карточка собирается на вашем устройстве. расписание никуда не отправляется</p>
         </div>
       </section>
 
@@ -138,7 +133,7 @@ const pageUrl = new URL(base, site).toString();
             <button id="png" class="primary" type="button">сохранить карточку (PNG)</button>
             <button id="ics" class="secondary" type="button">скачать события (ICS)</button>
           </div>
-          <p class="hint">файл готовится в браузере. расписание никуда не отправляется</p>
+          <p class="hint"><span aria-hidden="true">⌁</span> данные остаются на устройстве</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
         </aside>
       </div>
@@ -486,9 +481,9 @@ const pageUrl = new URL(base, site).toString();
         canvas.height = 2000;
         let context = canvas.getContext('2d');
         const palettes = {
-          clean: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
-          dark: { paper: '#17251d', ink: '#f4f7f2', muted: '#c3d0c7', line: '#466050', accent: '#a8e0b9', accentSoft: '#243f2e' },
-          lines: { paper: '#ffffff', ink: '#18221c', muted: '#6b766e', line: '#dce2dc', accent: '#16764e', accentSoft: '#e4efe7' },
+          clean: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
+          dark: { paper: '#30263a', ink: '#fbf1ee', muted: '#cbbbc3', line: '#4a3a50', accent: '#e6a6a3', accentSoft: '#4a2f3a' },
+          lines: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
         };
         const colors = palettes[style] || palettes.clean;
         const wrap = (value, font, maxWidth) => {

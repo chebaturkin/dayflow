@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -14,12 +15,18 @@ with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     context = browser.new_context(viewport={"width": 1440, "height": 1000}, device_scale_factor=1)
     page = context.new_page()
-    page.goto("http://127.0.0.1:4321/dayflow", wait_until="networkidle")
+    page.goto(os.environ.get("DAYFLOW_URL", "http://127.0.0.1:4321/dayflow"), wait_until="networkidle")
     page.evaluate("localStorage.clear()")
     page.reload(wait_until="networkidle")
 
     assert page.locator(".lesson").count() == 3
     assert "2 окна" in page.locator("#summary").inner_text()
+    assert page.locator("h1").inner_text() == "соберите план дня"
+    assert page.locator(".intro-note").count() == 0
+    assert "данные остаются на устройстве" in page.locator(".hint").inner_text()
+    assert page.locator("body").evaluate("(element) => getComputedStyle(element).backgroundColor") == "rgb(248, 241, 237)"
+    assert page.locator(".planner").evaluate("(element) => getComputedStyle(element).borderRadius") == "24px"
+    assert page.locator(".preview-card").evaluate("(element) => getComputedStyle(element).borderRadius") == "16px"
     remove_dev_toolbar(page)
     page.screenshot(path=str(PUBLIC / "preview-light.png"), full_page=True)
 
