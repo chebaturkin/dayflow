@@ -13,7 +13,7 @@ const document: ScheduleDocument = {
 
 describe('sharing the current card as text', () => {
   it('includes ordered active events, end times and notes', () => {
-    const text = scheduleAsText(document, 'plan');
+    const text = scheduleAsText(document, 'plan', 'ru');
     expect(text).toContain('рабочий день');
     expect(text).toContain('14 октября 2026');
     expect(text).toContain('09:00 - 10:00  подготовка');
@@ -24,12 +24,12 @@ describe('sharing the current card as text', () => {
   });
 
   it('excludes all names and notes from availability text', () => {
-    const text = scheduleAsText(document, 'availability');
+    const text = scheduleAsText(document, 'availability', 'ru');
     expect(text).toContain('10:00 - 12:00  свободно');
     expect(text).not.toMatch(/подготовка|встреча|секретная|отменённое/);
   });
 
   it('handles an empty day without claiming free time outside event bounds', () => {
-    expect(scheduleAsText({ ...document, label: '', lessons: [] }, 'availability')).toContain('нет событий');
+    expect(scheduleAsText({ ...document, label: '', lessons: [] }, 'availability', 'ru')).toContain('нет событий');
   });
 });

@@ -1,6 +1,7 @@
+import { t, dateLocale, getLanguage, formatDuration, pluralWord, type Language } from './i18n';
 import { activeLessons, availabilityBlocks, sortLessons, summarizeSchedule, type ScheduleDocument } from './schedule';
 
-export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan' | 'availability', signature: boolean): Promise<Blob> => {
+export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan' | 'availability', signature: boolean, locale: Language = getLanguage()): Promise<Blob> => {
   const canvas = window.document.createElement('canvas');
   canvas.width = 1600;
   let ctx = canvas.getContext('2d')!;
@@ -33,9 +34,9 @@ export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan
   };
   const derived = summarizeSchedule(document.lessons);
   const events = sortLessons(activeLessons(document.lessons));
-  const heading = wrap(document.label.trim() || (mode === 'plan' ? 'план дня' : 'свободное время'), headingFont, 1360);
+  const heading = wrap(document.label.trim() || (mode === 'plan' ? t('план дня', locale) : t('свободное время', locale)), headingFont, 1360);
   const rows = events.map((lesson) => {
-    const title = wrap(lesson.title || 'событие', bodyFont, 1090);
+    const title = wrap(lesson.title || t('событие', locale), bodyFont, 1090);
     const note = lesson.note ? wrap(lesson.note, noteFont, 1090) : [];
     const height = Math.max(160, title.length * 62 + note.length * 38 + (lesson.status === 'moved' ? 46 : 0) + 56);
     return { lesson, title, note, height };
@@ -64,15 +65,15 @@ export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan
       ctx.beginPath(); ctx.moveTo(80, y); ctx.lineTo(1520, y); ctx.stroke();
     }
   }
-  const date = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(document.date + 'T12:00:00'));
+  const date = new Intl.DateTimeFormat(dateLocale(locale), { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(document.date + 'T12:00:00'));
   draw(date, 120, 115, noteFont, colors.muted);
   heading.forEach((line, index) => draw(line, 120, 225 + index * 100, headingFont, colors.ink));
-  const hours = Math.floor(derived.totalMinutes / 60);
-  const minutes = derived.totalMinutes % 60;
-  const duration = [hours ? hours + ' ч' : '', minutes ? minutes + ' мин' : ''].filter(Boolean).join(' ') || '0 мин';
-  draw('занято ' + duration + ' · свободно ' + derived.freeWindows.length + ' ' + plural(derived.freeWindows.length, ['окно', 'окна', 'окон']), 120, summaryY + 15, noteFont, colors.muted);
+  const duration = formatDuration(derived.totalMinutes, locale);
+  const windows = derived.freeWindows.length;
+  const freeLabel = locale === 'en' ? windows + ' free ' + pluralWord(windows, 'window', locale) : t('свободно', locale) + ' ' + windows + ' ' + pluralWord(windows, 'window', locale);
+  draw(t('занято', locale) + ' ' + duration + ' · ' + freeLabel, 120, summaryY + 15, noteFont, colors.muted);
   let y = contentY;
-  if (!events.length) draw('нет событий', 120, y, bodyFont, colors.muted);
+  if (!events.length) draw(t('нет событий', locale), 120, y, bodyFont, colors.muted);
   else if (mode === 'plan') {
     rows.forEach(({ lesson, title, note, height }) => {
       rule(y - 45);
@@ -81,7 +82,7 @@ export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan
       title.forEach((line, index) => draw(line, 390, y + 12 + index * 62, bodyFont, colors.ink));
       let detailY = y + title.length * 62;
       note.forEach((line) => { draw(line, 390, detailY, noteFont, colors.muted); detailY += 38; });
-      if (lesson.status === 'moved') draw('перенесено', 390, detailY + 8, noteFont, colors.accent);
+      if (lesson.status === 'moved') draw(t('перенесено', locale), 390, detailY + 8, noteFont, colors.accent);
       y += height;
     });
   } else {
@@ -90,16 +91,10 @@ export const renderPng = (document: ScheduleDocument, style: string, mode: 'plan
       rule(y - 45);
       draw(block.start, 120, y + 8, '400 36px monospace', colors.accent);
       draw(block.end, 120, y + 53, '400 30px monospace', colors.muted);
-      draw(block.kind === 'free' ? 'свободно' : 'занято', 390, y + 12, bodyFont, block.kind === 'free' ? colors.accent : colors.muted);
+      draw(block.kind === 'free' ? t('свободно', locale) : t('занято', locale), 390, y + 12, bodyFont, block.kind === 'free' ? colors.accent : colors.muted);
       y += 150;
     });
   }
   if (signature) { rule(footerY - 45); draw('dayflow', 120, footerY, noteFont, colors.muted); }
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('не получилось создать картинку')), 'image/png'));
-};
-
-const plural = (amount: number, forms: string[]) => {
-  const last = amount % 10;
-  const tens = amount % 100;
-  return tens >= 11 && tens <= 14 ? forms[2] : last === 1 ? forms[0] : last >= 2 && last <= 4 ? forms[1] : forms[2];
+  return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error(t('не получилось создать картинку', locale))), 'image/png'));
 };

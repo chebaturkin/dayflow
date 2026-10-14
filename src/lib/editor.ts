@@ -1,3 +1,4 @@
+import { t, dateLocale, getLanguage, initI18n, pluralWord, formatDuration, translateTemplate, writeMessage } from './i18n';
 import { activeLessons, availabilityBlocks, durationMinutes, nextEventSlot, sortLessons, summarizeSchedule, type Lesson, type ScheduleDocument } from './schedule';
 import { lessonsToIcs } from './ics';
 import { parseDocument, serializeDocument } from './document';
@@ -5,37 +6,32 @@ import { DocumentHistory } from './history';
 import { scheduleAsText } from './share';
 import { renderPng } from './png';
 
+initI18n();
+
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
 const stored = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const store = (key: string, value: string) => { try { localStorage.setItem(key, value); return true; } catch { return false; } };
 const now = new Date();
 const today = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
-const samples: Record<string, Lesson[]> = {
+const makeSamples = (): Record<string, Lesson[]> => ({
   study: [
-    { id: 'study-design', title: 'дизайн-системы', start: '09:00', end: '10:30', status: 'planned' },
-    { id: 'study-english', title: 'английский', start: '11:40', end: '13:10', status: 'planned' },
-    { id: 'study-studio', title: 'практика в студии', start: '13:40', end: '15:10', status: 'moved', note: 'аудитория 204' },
+    { id: 'study-design', title: t('дизайн-системы'), start: '09:00', end: '10:30', status: 'planned' },
+    { id: 'study-english', title: t('английский'), start: '11:40', end: '13:10', status: 'planned' },
+    { id: 'study-studio', title: t('практика в студии'), start: '13:40', end: '15:10', status: 'moved', note: t('аудитория 204') },
   ],
   work: [
-    { id: 'work-sync', title: 'командная встреча', start: '10:00', end: '10:30', status: 'planned' },
-    { id: 'work-focus', title: 'время для фокуса', start: '11:00', end: '13:00', status: 'planned' },
-    { id: 'work-review', title: 'разбор задач', start: '15:30', end: '16:15', status: 'planned' },
+    { id: 'work-sync', title: t('командная встреча'), start: '10:00', end: '10:30', status: 'planned' },
+    { id: 'work-focus', title: t('время для фокуса'), start: '11:00', end: '13:00', status: 'planned' },
+    { id: 'work-review', title: t('разбор задач'), start: '15:30', end: '16:15', status: 'planned' },
   ],
-};
+});
 const cloneLessons = (value: Lesson[]) => value.map((lesson) => ({ ...lesson }));
 const makeId = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2);
-const plural = (amount: number, forms: string[]) => {
-  const last = amount % 10, tens = amount % 100;
-  return tens >= 11 && tens <= 14 ? forms[2] : last === 1 ? forms[0] : last >= 2 && last <= 4 ? forms[1] : forms[2];
-};
-const wordForEvents = (n: number) => plural(n, ['событие', 'события', 'событий']);
-const wordForWindows = (n: number) => plural(n, ['окно', 'окна', 'окон']);
-const formatDate = (value: string) => new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
-const formatMinutes = (minutes: number) => {
-  const hours = Math.floor(minutes / 60), rest = minutes % 60;
-  return [hours ? hours + ' ч' : '', rest ? rest + ' мин' : ''].filter(Boolean).join(' ') || '0 мин';
-};
-const fallbackDocument = (): ScheduleDocument => ({ version: 2, date: today, label: '', lessons: cloneLessons(samples.study) });
+const wordForEvents = (n: number) => pluralWord(n, 'event');
+const wordForWindows = (n: number) => pluralWord(n, 'window');
+const formatDate = (value: string) => new Intl.DateTimeFormat(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
+const formatMinutes = formatDuration;
+const fallbackDocument = (): ScheduleDocument => ({ version: 2, date: today, label: '', lessons: cloneLessons(makeSamples().study) });
 const readDocument = () => {
   try {
     const saved = stored('dayflow-document');
@@ -46,6 +42,7 @@ const readDocument = () => {
   return fallbackDocument();
 };
 let documentState = readDocument();
+let pristineExample: string | null = stored('dayflow-document') || stored('dayflow-lessons') ? null : 'study';
 let style = ['clean', 'dark', 'lines'].includes(stored('dayflow-style') || '') ? stored('dayflow-style')! : 'clean';
 let mode: 'plan' | 'availability' = stored('dayflow-mode') === 'availability' ? 'availability' : 'plan';
 const history = new DocumentHistory(serializeDocument(documentState));
@@ -61,14 +58,15 @@ const editorStatus = $('#editor-status');
 let messageTimer: ReturnType<typeof setTimeout>;
 const showSaved = (message: string) => {
   clearTimeout(messageTimer);
-  $('#save-status').textContent = message;
+  writeMessage($('#save-status'), message);
   messageTimer = setTimeout(() => { $('#save-status').textContent = ''; }, 4000);
 };
 const syncHistory = () => { undoButton.disabled = !history.canUndo; redoButton.disabled = !history.canRedo; };
 const save = (group?: unknown) => {
+  pristineExample = null;
   const value = serializeDocument(documentState);
   history.record(value, group);
-  if (!store('dayflow-document', value)) editorStatus.textContent = 'браузер не сохранил изменения. скачайте расписание через меню «файл».';
+  if (!store('dayflow-document', value)) writeMessage(editorStatus, t('браузер не сохранил изменения. скачайте расписание через меню «файл».'));
   syncHistory();
 };
 const download = (data: Blob | string, name: string, type: string) => {
@@ -82,11 +80,11 @@ const updateDerived = () => {
   const derived = summarizeSchedule(documentState.lessons);
   const free = derived.freeWindows.length;
   $('#summary').innerHTML = '<span><strong>' + derived.activeCount + '</strong> ' + wordForEvents(derived.activeCount) + '</span>'
-    + '<span>занято <strong>' + formatMinutes(derived.totalMinutes) + '</strong></span>'
-    + '<span><strong>' + free + '</strong> ' + wordForWindows(free) + ' свободно</span>';
+    + '<span>' + t('занято') + ' <strong>' + formatMinutes(derived.totalMinutes) + '</strong></span>'
+    + '<span><strong>' + free + '</strong> ' + wordForWindows(free) + ' ' + t('свободно') + '</span>';
   const conflict = $('#conflict');
   conflict.hidden = !derived.conflicts.length;
-  conflict.textContent = derived.conflicts.length ? 'события пересекаются в ' + derived.conflicts[0].start + ' - ' + derived.conflicts[0].end + '. проверьте время.' : '';
+  conflict.textContent = derived.conflicts.length ? t('события пересекаются в {start} - {end}. проверьте время.', getLanguage(), { start: derived.conflicts[0].start, end: derived.conflicts[0].end }) : '';
   $('#empty-editor').hidden = documentState.lessons.length > 0;
 };
 const renderCard = () => {
@@ -96,8 +94,10 @@ const renderCard = () => {
   card.dataset.style = style;
   card.dataset.mode = mode;
   $('#card-date').textContent = formatDate(documentState.date);
-  $('#card-label').textContent = documentState.label.trim() || (mode === 'plan' ? 'план дня' : 'свободное время');
-  $('#card-summary').innerHTML = '<span>занято ' + formatMinutes(derived.totalMinutes) + '</span><span>свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length) + '</span>';
+  $('#card-label').textContent = documentState.label.trim() || (mode === 'plan' ? t('план дня') : t('свободное время'));
+  const windows = derived.freeWindows.length;
+  const freeLabel = getLanguage() === 'en' ? windows + ' free ' + wordForWindows(windows) : t('свободно') + ' ' + windows + ' ' + wordForWindows(windows);
+  $('#card-summary').innerHTML = '<span>' + t('занято') + ' ' + formatMinutes(derived.totalMinutes) + '</span><span>' + freeLabel + '</span>';
   $('#card-footer').hidden = !signature.checked;
   const list = $('#card-lessons');
   list.replaceChildren();
@@ -111,20 +111,20 @@ const renderCard = () => {
     return { line, body };
   };
   if (!active.length) {
-    const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'нет событий'; list.append(empty);
+    const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = t('нет событий'); list.append(empty);
   } else if (mode === 'plan') {
     active.forEach((lesson) => {
       const { line, body } = makeLine(lesson.start, lesson.end);
-      const title = document.createElement('strong'); title.textContent = lesson.title || 'событие'; body.append(title);
+      const title = document.createElement('strong'); title.textContent = lesson.title || t('событие'); body.append(title);
       if (lesson.note) { const note = document.createElement('small'); note.textContent = lesson.note; body.append(note); }
-      if (lesson.status === 'moved') { const mark = document.createElement('em'); mark.textContent = 'перенесено'; body.append(mark); }
+      if (lesson.status === 'moved') { const mark = document.createElement('em'); mark.textContent = t('перенесено'); body.append(mark); }
       list.append(line);
     });
   } else {
     availabilityBlocks(documentState.lessons).forEach((block) => {
       const { line, body } = makeLine(block.start, block.end);
       line.classList.add(block.kind);
-      const title = document.createElement('strong'); title.textContent = block.kind === 'free' ? 'свободно' : 'занято'; body.append(title);
+      const title = document.createElement('strong'); title.textContent = block.kind === 'free' ? t('свободно') : t('занято'); body.append(title);
       list.append(line);
     });
   }
@@ -136,10 +136,10 @@ const renderRows = () => {
     const row = document.createElement('article');
     row.className = 'lesson ' + lesson.status;
     row.dataset.id = lesson.id;
-    row.innerHTML = '<div class="time-fields"><label><span>с</span><input class="start" type="text" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" required aria-label="начало" /></label><label><span>до</span><input class="end" type="text" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" required aria-label="конец" /></label></div>'
+    row.innerHTML = translateTemplate('<div class="time-fields"><label><span>с</span><input class="start" type="text" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" required aria-label="начало" /></label><label><span>до</span><input class="end" type="text" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" maxlength="5" required aria-label="конец" /></label></div>'
       + '<div class="lesson-main"><input class="title" maxlength="240" aria-label="название события" placeholder="название события" /><input class="note" maxlength="500" aria-label="заметка" placeholder="добавить заметку" /></div>'
       + '<div class="lesson-bottom"><select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесено</option><option value="cancelled">отменено</option></select>'
-      + '<div class="row-actions"><button class="duplicate" type="button" aria-label="создать копию" title="создать копию">' + copyIcon + '</button><button class="remove" type="button" aria-label="удалить событие" title="удалить событие">×</button></div></div>';
+      + '<div class="row-actions"><button class="duplicate" type="button" aria-label="создать копию" title="создать копию">' + copyIcon + '</button><button class="remove" type="button" aria-label="удалить событие" title="удалить событие">×</button></div></div>');
     const start = row.querySelector<HTMLInputElement>('.start')!, end = row.querySelector<HTMLInputElement>('.end')!;
     const title = row.querySelector<HTMLInputElement>('.title')!, note = row.querySelector<HTMLInputElement>('.note')!;
     const status = row.querySelector<HTMLSelectElement>('.status')!;
@@ -157,7 +157,7 @@ const renderRows = () => {
     const updateTime = (event: Event) => {
       const input = event.target as HTMLInputElement;
       const invalid = !validRange();
-      input.setCustomValidity(invalid ? 'время окончания должно быть позже начала' : '');
+      input.setCustomValidity(invalid ? t('время окончания должно быть позже начала') : '');
       input.setAttribute('aria-invalid', String(invalid));
       if (invalid) { input.reportValidity(); return; }
       clearTimeErrors();
@@ -171,14 +171,14 @@ const renderRows = () => {
     };
     title.oninput = () => updateText(title); note.oninput = () => updateText(note); status.onchange = () => updateText();
     row.querySelector<HTMLButtonElement>('.duplicate')!.onclick = () => {
-      if (documentState.lessons.length >= 200) { editorStatus.textContent = 'в одном дне может быть до 200 событий.'; return; }
-      documentState.lessons.push({ ...lesson, id: makeId(), title: (lesson.title + ' · копия').slice(0, 240) });
+      if (documentState.lessons.length >= 200) { writeMessage(editorStatus, t('в одном дне может быть до 200 событий.')); return; }
+      documentState.lessons.push({ ...lesson, id: makeId(), title: (lesson.title + t(' · копия')).slice(0, 240) });
       save(); render();
     };
     row.querySelector<HTMLButtonElement>('.remove')!.onclick = () => {
       documentState.lessons = documentState.lessons.filter((item) => item.id !== lesson.id);
       save(); render();
-      editorStatus.textContent = 'событие удалено. его можно вернуть кнопкой отмены.';
+      writeMessage(editorStatus, t('событие удалено. его можно вернуть кнопкой отмены.'));
       undoButton.focus();
     };
     root.append(row);
@@ -186,19 +186,19 @@ const renderRows = () => {
 };
 const render = () => {
   dateInput.value = documentState.date; labelInput.value = documentState.label;
-  $('#date-display').textContent = documentState.date.split('-').reverse().join('.');
+  $('#date-display').textContent = new Intl.DateTimeFormat(dateLocale()).format(new Date(documentState.date + 'T12:00:00'));
   signature.checked = stored('dayflow-signature') !== 'false';
   document.querySelectorAll<HTMLButtonElement>('.mode').forEach((button) => { const active = button.dataset.mode === mode; button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active)); });
   document.querySelectorAll<HTMLButtonElement>('.style').forEach((button) => { const active = button.dataset.style === style; button.classList.toggle('active', active); button.setAttribute('aria-pressed', String(active)); });
   $('#copy-fallback').hidden = true;
-  editorStatus.textContent = '';
+  writeMessage(editorStatus, '');
   renderRows(); updateDerived(); renderCard(); syncHistory();
 };
 const travelHistory = (direction: 'undo' | 'redo') => {
   const value = history[direction]();
   if (!value) return;
   documentState = parseDocument(value); store('dayflow-document', value); render();
-  editorStatus.textContent = direction === 'undo' ? 'изменение отменено' : 'изменение повторено';
+  writeMessage(editorStatus, direction === 'undo' ? t('изменение отменено') : t('изменение повторено'));
 };
 undoButton.onclick = () => travelHistory('undo'); redoButton.onclick = () => travelHistory('redo');
 document.addEventListener('focusout', () => history.endGroup());
@@ -210,17 +210,19 @@ $('#add').onclick = () => {
   const invalid = [dateInput, ...root.querySelectorAll<HTMLInputElement>('.time-fields input')].find((field) => !field.checkValidity());
   if (invalid) { invalid.reportValidity(); return; }
   if (pending instanceof HTMLInputElement) pending.blur();
-  if (documentState.lessons.length >= 200) { editorStatus.textContent = 'в одном дне может быть до 200 событий.'; return; }
+  if (documentState.lessons.length >= 200) { writeMessage(editorStatus, t('в одном дне может быть до 200 событий.')); return; }
   const slot = nextEventSlot(documentState.lessons);
-  if (!slot) { editorStatus.textContent = 'в расписании нет свободного часа. измените время одного из событий.'; return; }
+  if (!slot) { writeMessage(editorStatus, t('в расписании нет свободного часа. измените время одного из событий.')); return; }
   const id = makeId(); documentState.lessons.push({ id, title: '', ...slot, status: 'planned' }); save(); render();
   root.querySelector<HTMLInputElement>('[data-id="' + id + '"] .title')?.focus();
 };
 $<HTMLSelectElement>('#preset').onchange = (event) => {
   const select = event.target as HTMLSelectElement;
   if (!select.value) return;
-  documentState.lessons = select.value === 'empty' ? [] : cloneLessons(samples[select.value]);
+  const selected = select.value;
+  documentState.lessons = selected === 'empty' ? [] : cloneLessons(makeSamples()[selected]);
   save(); render(); select.value = '';
+  pristineExample = selected === 'empty' ? null : selected;
 };
 document.querySelectorAll<HTMLButtonElement>('.mode').forEach((button) => {
   button.onclick = () => { mode = button.dataset.mode as typeof mode; store('dayflow-mode', mode); render(); };
@@ -231,32 +233,32 @@ document.querySelectorAll<HTMLButtonElement>('.style').forEach((button) => {
 dateInput.onchange = () => {
   if (!dateInput.value || !dateInput.validity.valid) return;
   documentState.date = dateInput.value;
-  $('#date-display').textContent = documentState.date.split('-').reverse().join('.');
+  $('#date-display').textContent = new Intl.DateTimeFormat(dateLocale()).format(new Date(documentState.date + 'T12:00:00'));
   save(dateInput); renderCard();
 };
 labelInput.oninput = () => { documentState.label = labelInput.value; save(labelInput); renderCard(); };
 signature.onchange = () => { store('dayflow-signature', String(signature.checked)); renderCard(); };
 const setTheme = (theme: string) => {
   document.documentElement.classList.toggle('dark', theme === 'dark');
-  const label = theme === 'dark' ? 'включить светлую тему' : 'включить тёмную тему';
+  const label = theme === 'dark' ? t('включить светлую тему') : t('включить тёмную тему');
   $('#theme').setAttribute('aria-label', label); $('#theme').setAttribute('title', label);
   $('meta[name="theme-color"]').setAttribute('content', theme === 'dark' ? '#1e211c' : '#f5f3ed');
   store('dayflow-theme', theme);
 };
 $('#theme').onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
-$('#ics').onclick = () => { download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar'); showSaved('файл для календаря сохранён'); };
-$('#export-json').onclick = () => { download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json'); showSaved('расписание сохранено'); };
+$('#ics').onclick = () => { download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar'); showSaved(t('файл для календаря сохранён')); };
+$('#export-json').onclick = () => { download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json'); showSaved(t('расписание сохранено')); };
 $('#import').onclick = () => $<HTMLInputElement>('#file').click();
 $<HTMLInputElement>('#file').onchange = async (event) => {
   const input = event.target as HTMLInputElement, file = input.files?.[0];
   if (!file) return;
   try {
-    if (file.size > 2_000_000) throw new Error('файл слишком большой. выберите расписание из dayflow.');
-    documentState = parseDocument(await file.text()); save(); render(); showSaved('расписание открыто');
-  } catch (error) { showSaved(error instanceof Error ? error.message : 'не получилось открыть файл'); }
+    if (file.size > 2_000_000) throw new Error(t('файл слишком большой. выберите расписание из dayflow.'));
+    documentState = parseDocument(await file.text()); save(); render(); showSaved(t('расписание открыто'));
+  } catch (error) { showSaved(error instanceof Error ? t(error.message) : t('не получилось открыть файл')); }
   input.value = '';
 };
-$('#reset').onclick = () => { documentState = fallbackDocument(); save(); render(); showSaved('пример восстановлен'); };
+$('#reset').onclick = () => { documentState = fallbackDocument(); save(); render(); pristineExample = 'study'; showSaved(t('пример восстановлен')); };
 fileMenu.addEventListener('click', (event) => { if ((event.target as HTMLElement).closest('button')) fileMenu.open = false; });
 document.addEventListener('click', (event) => { if (!fileMenu.contains(event.target as Node)) fileMenu.open = false; });
 window.addEventListener('keydown', (event) => {
@@ -268,14 +270,25 @@ window.addEventListener('keydown', (event) => {
 });
 $('#copy-text').onclick = async () => {
   const text = scheduleAsText(documentState, mode);
-  try { await navigator.clipboard.writeText(text); $('#copy-fallback').hidden = true; showSaved('текст скопирован'); }
-  catch { $('#copy-fallback').hidden = false; const field = $<HTMLTextAreaElement>('#share-text'); field.value = text; field.focus(); field.select(); showSaved('браузер не дал доступ к буферу обмена'); }
+  try { await navigator.clipboard.writeText(text); $('#copy-fallback').hidden = true; showSaved(t('текст скопирован')); }
+  catch { $('#copy-fallback').hidden = false; const field = $<HTMLTextAreaElement>('#share-text'); field.value = text; field.focus(); field.select(); showSaved(t('браузер не дал доступ к буферу обмена')); }
 };
 $('#png').onclick = async () => {
   const button = $<HTMLButtonElement>('#png'); button.disabled = true;
-  try { await document.fonts.ready; const blob = await renderPng(documentState, style, mode, signature.checked); download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'); showSaved('картинка сохранена'); }
-  catch { showSaved('не получилось сохранить картинку. попробуйте ещё раз.'); }
+  try { await document.fonts.ready; const blob = await renderPng(documentState, style, mode, signature.checked); download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'); showSaved(t('картинка сохранена')); }
+  catch { showSaved(t('не получилось сохранить картинку. попробуйте ещё раз.')); }
   finally { button.disabled = false; }
 };
 setTheme(stored('dayflow-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 render();
+
+window.addEventListener('dayflow:languagechange', () => {
+  // Only pristine session examples follow the language. Saved and edited records stay exact.
+  if (pristineExample) { documentState.lessons = cloneLessons(makeSamples()[pristineExample]); renderRows(); }
+  updateDerived(); renderCard();
+  $('#date-display').textContent = new Intl.DateTimeFormat(dateLocale()).format(new Date(documentState.date + 'T12:00:00'));
+  setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  root.querySelectorAll<HTMLInputElement>('[aria-invalid="true"]').forEach(input => input.setCustomValidity(t('время окончания должно быть позже начала')));
+});
+
+document.querySelector('.planner')!.addEventListener('input', () => { pristineExample = null; });

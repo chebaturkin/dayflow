@@ -6,26 +6,29 @@ const site = import.meta.env.SITE ?? 'https://chebaturkin.github.io';
 const pageUrl = new URL(base, site).toString();
 ---
 
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="соберите расписание на день и отправьте его картинкой или текстом. можно показать только свободное время." />
+    <meta name="description" content="make a day plan to share as an image or text. you can show just your free time."  data-i18n-content="соберите расписание на день и отправьте его картинкой или текстом. можно показать только свободное время."/>
     <meta name="theme-color" content="#f5f3ed" />
-    <meta property="og:title" content="dayflow: план дня одной картинкой" />
-    <meta property="og:description" content="расписание, которым удобно поделиться. картинкой, текстом или файлом для календаря." />
+    <meta property="og:title" content="dayflow: share your day"  data-i18n-content="dayflow: план дня одной картинкой"/>
+    <meta property="og:description" content="a day plan to share as an image, text or calendar file."  data-i18n-content="расписание, которым удобно поделиться. картинкой, текстом или файлом для календаря."/>
     <meta property="og:type" content="website" />
     <meta property="og:url" content={pageUrl} />
-    <meta property="og:image" content={new URL(base + '/preview-light.png', site).toString()} />
-    <title>dayflow: план дня одной картинкой</title>
+    <meta property="og:image" content={new URL(base + '/en/preview-light.png', site).toString()} />
+    <title data-i18n-parts="[&quot;dayflow: план дня одной картинкой&quot;]">dayflow: share your day</title>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
         <a class="wordmark" href={base}>dayflow<span aria-hidden="true">.</span></a>
-        <nav aria-label="навигация">
+        <nav aria-label="navigation" data-i18n-aria-label="навигация">
           <a href="https://github.com/chebaturkin/dayflow" target="_blank" rel="noreferrer">github</a>
-          <button id="theme" class="theme-button" type="button" aria-label="включить тёмную тему" title="включить тёмную тему">
+          <div class="language-switch" role="group" aria-label="language / язык">
+            <button type="button" data-language="ru" lang="ru" aria-label="переключить на русский" aria-pressed="false">ru</button><span aria-hidden="true">/</span><button type="button" data-language="en" lang="en" aria-label="switch to english" aria-pressed="true">en</button>
+          </div>
+          <button id="theme" class="theme-button" type="button" aria-label="use dark theme" title="use dark theme" data-i18n-aria-label="включить тёмную тему" data-i18n-title="включить тёмную тему">
             <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" /></svg>
             <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5" /></svg>
           </button>
@@ -33,50 +36,50 @@ const pageUrl = new URL(base, site).toString();
       </header>
 
       <section class="intro">
-        <h1>план на день</h1>
-        <p>запишите дела и отправьте расписание<br class="desktop-break" /> тем, с кем нужно договориться.</p>
+        <h1 data-i18n-parts="[&quot;план на день&quot;]">plan your day</h1>
+        <p data-i18n-parts="[&quot;запишите дела и отправьте расписание&quot;, &quot; тем, с кем нужно договориться.&quot;]">write down your plans and share your day<br class="desktop-break" /> with the people who need to know.</p>
       </section>
 
       <div class="layout">
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
-            <h2 id="lessons-heading">расписание</h2>
+            <h2 id="lessons-heading" data-i18n-parts="[&quot;расписание&quot;]">schedule</h2>
             <div class="document-actions">
-              <button id="undo" class="history-action" type="button" disabled aria-label="отменить изменение" title="отменить изменение (ctrl / ⌘ + z)">
+              <button id="undo" class="history-action" type="button" disabled aria-label="undo change" title="undo change (ctrl / ⌘ + z)" data-i18n-aria-label="отменить изменение" data-i18n-title="отменить изменение (ctrl / ⌘ + z)">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4-5 5 5 5M4 9h10a6 6 0 0 1 0 12h-3" /></svg>
               </button>
-              <button id="redo" class="history-action" type="button" disabled aria-label="повторить изменение" title="повторить изменение (ctrl / ⌘ + shift + z)">
+              <button id="redo" class="history-action" type="button" disabled aria-label="redo change" title="redo change (ctrl / ⌘ + shift + z)" data-i18n-aria-label="повторить изменение" data-i18n-title="повторить изменение (ctrl / ⌘ + shift + z)">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-5 5M20 9H10a6 6 0 0 0 0 12h3" /></svg>
               </button>
               <details class="file-menu">
-                <summary>файл <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary>
+                <summary data-i18n-parts="[&quot;файл &quot;]">file <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary>
                 <div class="file-menu-content">
-                  <button id="import" type="button">открыть расписание <span>json</span></button>
-                  <button id="export-json" type="button">сохранить расписание <span>json</span></button>
-                  <button id="ics" type="button">добавить в календарь <span>ics</span></button>
-                  <button id="reset" type="button">вернуть пример</button>
+                  <button id="import" type="button" data-i18n-parts="[&quot;открыть расписание &quot;]">open schedule <span>json</span></button>
+                  <button id="export-json" type="button" data-i18n-parts="[&quot;сохранить расписание &quot;]">save schedule <span>json</span></button>
+                  <button id="ics" type="button" data-i18n-parts="[&quot;добавить в календарь &quot;]">add to calendar <span>ics</span></button>
+                  <button id="reset" type="button" data-i18n-parts="[&quot;вернуть пример&quot;]">restore example</button>
                 </div>
               </details>
               <input id="file" type="file" accept="application/json,.json" hidden />
             </div>
           </div>
 
-          <div class="document-bar" aria-label="данные дня">
-            <label class="date-field"><span>дата</span><span class="date-input-wrap"><input id="date" type="date" required min="0001-01-01" max="9999-12-31" /><span id="date-display" aria-hidden="true"></span></span></label>
-            <label class="label-field"><span>название дня</span><input id="label" type="text" maxlength="80" placeholder="например, рабочая среда" /></label>
+          <div class="document-bar" aria-label="day details" data-i18n-aria-label="данные дня">
+            <label class="date-field"><span data-i18n-parts="[&quot;дата&quot;]">date</span><span class="date-input-wrap"><input id="date" type="date" required min="0001-01-01" max="9999-12-31" /><span id="date-display" aria-hidden="true"></span></span></label>
+            <label class="label-field"><span data-i18n-parts="[&quot;название дня&quot;]">name your day</span><input id="label" type="text" maxlength="80" placeholder="for example, wednesday at work"  data-i18n-placeholder="например, рабочая среда"/></label>
           </div>
           <div id="summary" class="summary-strip" aria-live="polite"></div>
           <div id="conflict" class="conflict" role="status" aria-live="polite" hidden></div>
           <div id="lessons"></div>
-          <p id="empty-editor" class="empty-editor" hidden>пока ничего не запланировано.<br />добавьте событие или выберите пример.</p>
+          <p id="empty-editor" class="empty-editor" hidden data-i18n-parts="[&quot;пока ничего не запланировано.&quot;, &quot;добавьте событие или выберите пример.&quot;]">nothing planned yet.<br />add an event or choose an example.</p>
           <div class="planner-actions">
-            <button id="add" class="add-action" type="button"><span aria-hidden="true">+</span> добавить событие</button>
+            <button id="add" class="add-action" type="button" data-i18n-parts="[&quot; добавить событие&quot;]"><span aria-hidden="true">+</span> add event</button>
             <label class="preset-label">
-              <select id="preset" aria-label="выбрать пример">
-                <option value="">или взять пример</option>
-                <option value="study">учебный день</option>
-                <option value="work">рабочий день</option>
-                <option value="empty">начать с пустого листа</option>
+              <select id="preset" aria-label="choose an example" data-i18n-aria-label="выбрать пример">
+                <option value="" data-i18n-parts="[&quot;или взять пример&quot;]">or try an example</option>
+                <option value="study" data-i18n-parts="[&quot;учебный день&quot;]">study day</option>
+                <option value="work" data-i18n-parts="[&quot;рабочий день&quot;]">work day</option>
+                <option value="empty" data-i18n-parts="[&quot;начать с пустого листа&quot;]">start fresh</option>
               </select>
             </label>
           </div>
@@ -84,32 +87,32 @@ const pageUrl = new URL(base, site).toString();
         </section>
 
         <aside class="export" id="export" aria-labelledby="preview-heading">
-          <div class="export-head"><h2 id="preview-heading">карточка</h2><span class="count" id="count"></span></div>
-          <div class="mode-switch" role="group" aria-label="содержание карточки">
-            <button data-mode="plan" class="mode active" type="button">план дня</button>
-            <button data-mode="availability" class="mode" type="button">свободное время</button>
+          <div class="export-head"><h2 id="preview-heading" data-i18n-parts="[&quot;карточка&quot;]">card</h2><span class="count" id="count"></span></div>
+          <div class="mode-switch" role="group" aria-label="card content" data-i18n-aria-label="содержание карточки">
+            <button data-mode="plan" class="mode active" type="button" data-i18n-parts="[&quot;план дня&quot;]">day plan</button>
+            <button data-mode="availability" class="mode" type="button" data-i18n-parts="[&quot;свободное время&quot;]">free time</button>
           </div>
           <div class="preview-card" id="preview-card" data-style="clean" data-mode="plan">
-            <div class="preview-card-head"><span id="card-date"></span><h3 id="card-label">план дня</h3></div>
+            <div class="preview-card-head"><span id="card-date"></span><h3 id="card-label" data-i18n-parts="[&quot;план дня&quot;]">day plan</h3></div>
             <div id="card-summary" class="card-summary"></div>
             <div id="card-lessons" class="card-list"></div>
             <div id="card-footer" class="card-footer">dayflow</div>
           </div>
           <div class="export-options">
-            <div class="styles" role="group" aria-label="варианты оформления">
-              <button data-style="clean" class="style active" type="button"><span class="style-swatch swatch-clean" aria-hidden="true"></span>бумага</button>
-              <button data-style="dark" class="style" type="button"><span class="style-swatch swatch-dark" aria-hidden="true"></span>тёмная</button>
-              <button data-style="lines" class="style" type="button"><span class="style-swatch swatch-lines" aria-hidden="true"></span>строки</button>
+            <div class="styles" role="group" aria-label="card styles" data-i18n-aria-label="варианты оформления">
+              <button data-style="clean" class="style active" type="button" data-i18n-parts="[&quot;бумага&quot;]"><span class="style-swatch swatch-clean" aria-hidden="true"></span>paper</button>
+              <button data-style="dark" class="style" type="button" data-i18n-parts="[&quot;тёмная&quot;]"><span class="style-swatch swatch-dark" aria-hidden="true"></span>dark</button>
+              <button data-style="lines" class="style" type="button" data-i18n-parts="[&quot;строки&quot;]"><span class="style-swatch swatch-lines" aria-hidden="true"></span>ruled</button>
             </div>
-            <label class="check"><input id="signature" type="checkbox" checked /><span>подпись dayflow</span></label>
+            <label class="check"><input id="signature" type="checkbox" checked /><span data-i18n-parts="[&quot;подпись dayflow&quot;]">dayflow signature</span></label>
           </div>
           <div class="export-actions">
-            <button id="png" class="primary" type="button">сохранить картинку <span>png</span></button>
-            <button id="copy-text" class="secondary" type="button">скопировать текст</button>
+            <button id="png" class="primary" type="button" data-i18n-parts="[&quot;сохранить картинку &quot;]">save image <span>png</span></button>
+            <button id="copy-text" class="secondary" type="button" data-i18n-parts="[&quot;скопировать текст&quot;]">copy text</button>
           </div>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
           <div id="copy-fallback" class="copy-fallback" hidden>
-            <label for="share-text">выделите и скопируйте текст</label>
+            <label for="share-text" data-i18n-parts="[&quot;выделите и скопируйте текст&quot;]">select and copy the text</label>
             <textarea id="share-text" readonly rows="6"></textarea>
           </div>
         </aside>

@@ -194,3 +194,12 @@ input::placeholder { color: var(--muted); opacity: .8; }
   .styles { margin-bottom: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
+
+/* A small typographic choice beside the existing header links. */
+.language-switch { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); }
+.language-switch button { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 36px; padding: 0 3px; border: 0; border-radius: 0; background: none; color: inherit; font-size: 12px; }
+.language-switch > span { opacity: .4; font-size: 11px; }
+.language-switch button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1px; }
+.language-switch button:hover { color: var(--ink); }
+.time-fields label span { width: 28px; }
+@media (max-width: 520px) { .topbar nav { gap: 12px; } .language-switch button { min-height: 44px; } }
