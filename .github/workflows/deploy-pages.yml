@@ -30,6 +30,9 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      - name: test scheduling and exports
+        run: npm test
+
       - name: build site
         run: npm run build
 

@@ -13,6 +13,12 @@ describe('portable schedule documents', () => {
     expect(parseDocument(serializeDocument(document))).toEqual(document);
   });
 
+  it('round trips dates in the complete supported year range', () => {
+    for (const date of ['0001-10-14', '0099-10-14', '9999-10-14']) {
+      expect(parseDocument(serializeDocument({ ...document, date })).date).toBe(date);
+    }
+  });
+
   it('rejects malformed documents', () => {
     expect(() => parseDocument('{"version":1}')).toThrow(DocumentParseError);
     expect(() => parseDocument(JSON.stringify({ ...document, lessons: [{ ...document.lessons[0], id: 'one' }, { ...document.lessons[0], id: 'one' }] }))).toThrow('повторяющиеся');

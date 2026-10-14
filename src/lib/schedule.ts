@@ -112,14 +112,40 @@ export const conflicts = (lessons: Lesson[]): Conflict[] => {
 
 export const summarizeSchedule = (lessons: Lesson[]): ScheduleSummary => {
   const active = sortLessons(activeLessons(lessons));
+  const intervals = mergedActiveIntervals(active);
   return {
     activeCount: active.length,
-    totalMinutes: active.reduce((total, lesson) => total + Math.max(0, durationMinutes(lesson)), 0),
+    totalMinutes: intervals.reduce((total, interval) => total + interval.end - interval.start, 0),
     firstStart: active[0]?.start || '',
-    lastEnd: active.at(-1)?.end || '',
+    lastEnd: intervals.length ? minutesToTime(intervals.at(-1)!.end) : '',
     freeWindows: freeWindows(active),
     conflicts: conflicts(active),
   };
+};
+
+export type AvailabilityBlock = { kind: 'busy' | 'free'; start: string; end: string };
+
+export const availabilityBlocks = (lessons: Lesson[]): AvailabilityBlock[] => {
+  const busy = mergedActiveIntervals(lessons).map((interval): AvailabilityBlock => ({
+    kind: 'busy', start: minutesToTime(interval.start), end: minutesToTime(interval.end),
+  }));
+  const free = freeWindows(lessons).map((window): AvailabilityBlock => ({ kind: 'free', start: window.start, end: window.end }));
+  return [...busy, ...free].sort((a, b) => a.start.localeCompare(b.start));
+};
+
+export const nextEventSlot = (lessons: Lesson[]): { start: string; end: string } | null => {
+  const intervals = mergedActiveIntervals(lessons);
+  const latestEnd = intervals.at(-1)?.end ?? 540;
+  if (latestEnd + 60 <= 1439) return { start: minutesToTime(latestEnd), end: minutesToTime(latestEnd + 60) };
+  for (const earliest of [540, 0]) {
+    let candidate = earliest;
+    for (const interval of intervals) {
+      if (candidate + 60 <= interval.start) break;
+      if (candidate < interval.end) candidate = interval.end;
+    }
+    if (candidate + 60 <= 1439) return { start: minutesToTime(candidate), end: minutesToTime(candidate + 60) };
+  }
+  return null;
 };
 
 export const validateSchedule = (schedule: DaySchedule) => {

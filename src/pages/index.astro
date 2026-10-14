@@ -10,616 +10,113 @@ const pageUrl = new URL(base, site).toString();
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="dayflow помогает собрать план дня и сохранить его одной картинкой. данные остаются на устройстве." />
-    <meta name="theme-color" content="#f8f1ed" />
-    <meta property="og:title" content="dayflow — план дня одной картинкой" />
-    <meta property="og:description" content="соберите расписание, покажите план или только свободное время. без регистрации." />
+    <meta name="description" content="соберите расписание на день и отправьте его картинкой или текстом. можно показать только свободное время." />
+    <meta name="theme-color" content="#f5f3ed" />
+    <meta property="og:title" content="dayflow: план дня одной картинкой" />
+    <meta property="og:description" content="расписание, которым удобно поделиться. картинкой, текстом или файлом для календаря." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={pageUrl} />
-    <title>dayflow — план дня одной картинкой</title>
+    <meta property="og:image" content={new URL(base + '/preview-light.png', site).toString()} />
+    <title>dayflow: план дня одной картинкой</title>
   </head>
   <body>
     <main class="shell">
       <header class="topbar">
-        <div class="brand">
-          <a class="wordmark" href={base}>dayflow</a>
-          <span>план дня в одной картинке</span>
-        </div>
+        <a class="wordmark" href={base}>dayflow<span aria-hidden="true">.</span></a>
         <nav aria-label="навигация">
-          <a href="#export">к готовой карточке</a>
-          <button id="theme" type="button" aria-label="включить тёмную тему">включить тёмную тему</button>
+          <a href="https://github.com/chebaturkin/dayflow" target="_blank" rel="noreferrer">github</a>
+          <button id="theme" class="theme-button" type="button" aria-label="включить тёмную тему" title="включить тёмную тему">
+            <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" /></svg>
+            <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.4 1.4m11.2 11.2L19 19M5 19l1.4-1.4M17.6 6.4 19 5" /></svg>
+          </button>
         </nav>
       </header>
 
       <section class="intro">
-        <div>
-          <h1>соберите план дня</h1>
-          <p class="lede">запишите дела, выберите вид карточки и сохраните её. можно оставить только свободное время</p>
-        </div>
-      </section>
-
-      <section class="document-bar" aria-label="данные дня">
-        <label class="date-field">
-          <span>дата</span>
-          <input id="date" type="date" />
-        </label>
-        <label class="label-field">
-          <span>название дня</span>
-          <input id="label" type="text" maxlength="80" placeholder="например, рабочий день" />
-        </label>
-        <div class="document-actions">
-          <button id="import" class="quiet-action" type="button">открыть JSON</button>
-          <button id="export-json" class="quiet-action" type="button">сохранить JSON</button>
-          <button id="reset" class="quiet-action" type="button">вернуть пример</button>
-          <input id="file" type="file" accept="application/json,.json" hidden />
-        </div>
+        <h1>план на день</h1>
+        <p>запишите дела и отправьте расписание<br class="desktop-break" /> тем, с кем нужно договориться.</p>
       </section>
 
       <div class="layout">
         <section class="planner" aria-labelledby="lessons-heading">
           <div class="section-head">
-            <div>
-              <p class="eyebrow">что запланировано</p>
-              <h2 id="lessons-heading">расписание</h2>
-            </div>
-            <div class="head-actions">
-              <label class="preset-label">
-                <span class="sr-only">выбрать пример</span>
-                <select id="preset" aria-label="выбрать пример">
-                  <option value="">взять пример</option>
-                  <option value="study">учебный день</option>
-                  <option value="work">рабочий день</option>
-                  <option value="empty">начать с пустого листа</option>
-                </select>
-              </label>
-              <button id="add" class="text-action" type="button">добавить событие <span aria-hidden="true">→</span></button>
+            <h2 id="lessons-heading">расписание</h2>
+            <div class="document-actions">
+              <button id="undo" class="history-action" type="button" disabled aria-label="отменить изменение" title="отменить изменение (ctrl / ⌘ + z)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4-5 5 5 5M4 9h10a6 6 0 0 1 0 12h-3" /></svg>
+              </button>
+              <button id="redo" class="history-action" type="button" disabled aria-label="повторить изменение" title="повторить изменение (ctrl / ⌘ + shift + z)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 4 5 5-5 5M20 9H10a6 6 0 0 0 0 12h3" /></svg>
+              </button>
+              <details class="file-menu">
+                <summary>файл <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></summary>
+                <div class="file-menu-content">
+                  <button id="import" type="button">открыть расписание <span>json</span></button>
+                  <button id="export-json" type="button">сохранить расписание <span>json</span></button>
+                  <button id="ics" type="button">добавить в календарь <span>ics</span></button>
+                  <button id="reset" type="button">вернуть пример</button>
+                </div>
+              </details>
+              <input id="file" type="file" accept="application/json,.json" hidden />
             </div>
           </div>
 
+          <div class="document-bar" aria-label="данные дня">
+            <label class="date-field"><span>дата</span><span class="date-input-wrap"><input id="date" type="date" required min="0001-01-01" max="9999-12-31" /><span id="date-display" aria-hidden="true"></span></span></label>
+            <label class="label-field"><span>название дня</span><input id="label" type="text" maxlength="80" placeholder="например, рабочая среда" /></label>
+          </div>
           <div id="summary" class="summary-strip" aria-live="polite"></div>
           <div id="conflict" class="conflict" role="status" aria-live="polite" hidden></div>
           <div id="lessons"></div>
-          <p id="empty-editor" class="empty-editor" hidden>добавьте первое событие — оно сразу появится в карточке</p>
-          <div class="keyboard-note"><kbd>⌘</kbd><span>+</span><kbd>↵</kbd> — быстро добавить событие</div>
+          <p id="empty-editor" class="empty-editor" hidden>пока ничего не запланировано.<br />добавьте событие или выберите пример.</p>
+          <div class="planner-actions">
+            <button id="add" class="add-action" type="button"><span aria-hidden="true">+</span> добавить событие</button>
+            <label class="preset-label">
+              <select id="preset" aria-label="выбрать пример">
+                <option value="">или взять пример</option>
+                <option value="study">учебный день</option>
+                <option value="work">рабочий день</option>
+                <option value="empty">начать с пустого листа</option>
+              </select>
+            </label>
+          </div>
+          <p id="editor-status" class="editor-status" role="status" aria-live="polite"></p>
         </section>
 
         <aside class="export" id="export" aria-labelledby="preview-heading">
-          <div class="export-head">
-            <div>
-              <p class="eyebrow">что отправить</p>
-              <h2 id="preview-heading">предпросмотр</h2>
-            </div>
-            <span class="count" id="count">0 событий</span>
-          </div>
-
+          <div class="export-head"><h2 id="preview-heading">карточка</h2><span class="count" id="count"></span></div>
           <div class="mode-switch" role="group" aria-label="содержание карточки">
             <button data-mode="plan" class="mode active" type="button">план дня</button>
             <button data-mode="availability" class="mode" type="button">свободное время</button>
           </div>
-
           <div class="preview-card" id="preview-card" data-style="clean" data-mode="plan">
-            <div class="preview-card-head">
-              <span id="card-date">06 октября 2026</span>
-              <span id="card-label">dayflow</span>
-            </div>
+            <div class="preview-card-head"><span id="card-date"></span><h3 id="card-label">план дня</h3></div>
             <div id="card-summary" class="card-summary"></div>
             <div id="card-lessons" class="card-list"></div>
-            <div id="card-footer" class="card-footer">создано в dayflow</div>
+            <div id="card-footer" class="card-footer">dayflow</div>
           </div>
-
           <div class="export-options">
-            <p class="option-label">как оформить</p>
             <div class="styles" role="group" aria-label="варианты оформления">
-              <button data-style="clean" class="style active" type="button">
-                <span class="mini-card mini-clean" aria-hidden="true"></span>
-                <span>бумага</span>
-              </button>
-              <button data-style="dark" class="style" type="button">
-                <span class="mini-card mini-dark" aria-hidden="true"></span>
-                <span>тёмная</span>
-              </button>
-              <button data-style="lines" class="style" type="button">
-                <span class="mini-card mini-lines" aria-hidden="true"></span>
-              <span>строки</span>
-              </button>
+              <button data-style="clean" class="style active" type="button"><span class="style-swatch swatch-clean" aria-hidden="true"></span>бумага</button>
+              <button data-style="dark" class="style" type="button"><span class="style-swatch swatch-dark" aria-hidden="true"></span>тёмная</button>
+              <button data-style="lines" class="style" type="button"><span class="style-swatch swatch-lines" aria-hidden="true"></span>строки</button>
             </div>
-            <label class="check">
-              <input id="repo" type="checkbox" checked />
-              <span>добавить ссылку на GitHub</span>
-            </label>
+            <label class="check"><input id="signature" type="checkbox" checked /><span>подпись dayflow</span></label>
           </div>
-
           <div class="export-actions">
-            <button id="png" class="primary" type="button">сохранить карточку (PNG)</button>
-            <button id="ics" class="secondary" type="button">скачать события (ICS)</button>
+            <button id="png" class="primary" type="button">сохранить картинку <span>png</span></button>
+            <button id="copy-text" class="secondary" type="button">скопировать текст</button>
           </div>
-          <p class="hint"><span aria-hidden="true">⌁</span> данные остаются на устройстве</p>
           <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
+          <div id="copy-fallback" class="copy-fallback" hidden>
+            <label for="share-text">выделите и скопируйте текст</label>
+            <textarea id="share-text" readonly rows="6"></textarea>
+          </div>
         </aside>
       </div>
     </main>
-
     <script>
-      // @ts-nocheck
-      import { activeLessons, sortLessons, summarizeSchedule } from '../lib/schedule';
-      import { lessonsToIcs } from '../lib/ics';
-      import { parseDocument, serializeDocument } from '../lib/document';
-
-      const today = new Date().toISOString().slice(0, 10);
-      const samples = {
-        study: [
-          { id: 'study-design', title: 'дизайн-системы', start: '09:00', end: '10:30', status: 'planned' },
-          { id: 'study-english', title: 'английский', start: '11:40', end: '13:10', status: 'planned' },
-          { id: 'study-studio', title: 'практика в студии', start: '13:40', end: '15:10', status: 'moved', note: 'аудитория 204' },
-        ],
-        work: [
-          { id: 'work-sync', title: 'командная встреча', start: '10:00', end: '10:30', status: 'planned' },
-          { id: 'work-focus', title: 'время для фокуса', start: '11:00', end: '13:00', status: 'planned' },
-          { id: 'work-review', title: 'разбор задач', start: '15:30', end: '16:15', status: 'planned' },
-        ],
-      };
-
-      const cloneLessons = (value) => value.map((lesson) => ({ ...lesson }));
-      const makeId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2));
-      const wordForEvents = (amount) => amount === 1 ? 'событие' : amount > 1 && amount < 5 ? 'события' : 'событий';
-      const wordForWindows = (amount) => amount === 1 ? 'окно' : amount > 1 && amount < 5 ? 'окна' : 'окон';
-      const MAX_TITLE_LENGTH = 240;
-      const MAX_NOTE_LENGTH = 500;
-      const formatDate = (value) => {
-        if (!value) return 'дата не указана';
-        return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(value + 'T12:00:00'));
-      };
-      const formatMinutes = (minutes) => {
-        if (!minutes) return '0 мин';
-        const hours = Math.floor(minutes / 60);
-        const rest = minutes % 60;
-        return (hours ? hours + ' ч' : '') + (hours && rest ? ' ' : '') + (rest ? rest + ' мин' : '');
-      };
-      const safeFileName = (value) => value.trim().replace(/[^a-zа-яё0-9]+/gi, '-').replace(/^-|-$/g, '') || 'dayflow';
-
-      const fallbackDocument = () => ({
-        version: 2,
-        date: today,
-        label: '',
-        lessons: cloneLessons(samples.study),
-      });
-      const readDocument = () => {
-        try {
-          const stored = localStorage.getItem('dayflow-document');
-          if (stored) return parseDocument(stored);
-          const legacy = JSON.parse(localStorage.getItem('dayflow-lessons') || 'null');
-          if (Array.isArray(legacy)) return { version: 2, date: today, label: '', lessons: legacy };
-        } catch {
-          // corrupted local data should not prevent the editor from opening
-        }
-        return fallbackDocument();
-      };
-
-      let documentState = readDocument();
-      let style = localStorage.getItem('dayflow-style') || 'clean';
-      let mode = localStorage.getItem('dayflow-mode') || 'plan';
-
-      const root = document.querySelector('#lessons');
-      const emptyEditor = document.querySelector('#empty-editor');
-      const summary = document.querySelector('#summary');
-      const conflict = document.querySelector('#conflict');
-      const card = document.querySelector('#preview-card');
-      const cardLessons = document.querySelector('#card-lessons');
-      const cardSummary = document.querySelector('#card-summary');
-      const count = document.querySelector('#count');
-      const repo = document.querySelector('#repo');
-      const saveStatus = document.querySelector('#save-status');
-      const dateInput = document.querySelector('#date');
-      const labelInput = document.querySelector('#label');
-
-      const save = () => localStorage.setItem('dayflow-document', serializeDocument(documentState));
-      const download = (data, name, type) => {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(new Blob([data], { type }));
-        link.download = name;
-        link.click();
-        URL.revokeObjectURL(link.href);
-      };
-      const showSaved = (message) => {
-        saveStatus.textContent = message;
-        window.setTimeout(() => { saveStatus.textContent = ''; }, 2400);
-      };
-      const updateDerived = () => {
-        const derived = summarizeSchedule(documentState.lessons);
-        const free = derived.freeWindows.length;
-        summary.innerHTML = '<span><strong>' + derived.activeCount + '</strong> ' + wordForEvents(derived.activeCount) + '</span>'
-          + '<span>занято <strong>' + formatMinutes(derived.totalMinutes) + '</strong></span>'
-          + '<span>свободно <strong>' + free + '</strong> ' + wordForWindows(free) + '</span>';
-        if (derived.conflicts.length) {
-          conflict.hidden = false;
-          conflict.textContent = 'время пересекается: ' + derived.conflicts[0].start + '–' + derived.conflicts[0].end + '. проверьте события';
-        } else {
-          conflict.hidden = true;
-          conflict.textContent = '';
-        }
-        emptyEditor.hidden = documentState.lessons.length > 0;
-      };
-
-      const renderCard = () => {
-        const derived = summarizeSchedule(documentState.lessons);
-        const active = sortLessons(activeLessons(documentState.lessons));
-        count.textContent = derived.activeCount + ' ' + wordForEvents(derived.activeCount);
-        card.dataset.style = style;
-        card.dataset.mode = mode;
-        document.querySelector('#card-date').textContent = formatDate(documentState.date);
-        document.querySelector('#card-label').textContent = documentState.label.trim() || 'dayflow';
-        cardSummary.innerHTML = '<span>занято ' + formatMinutes(derived.totalMinutes) + '</span><span>свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length) + '</span>';
-        cardLessons.replaceChildren();
-
-        if (!active.length) {
-          const empty = document.createElement('p');
-          empty.className = 'empty';
-          empty.textContent = 'пока нет событий — добавьте первое';
-          cardLessons.append(empty);
-        } else if (mode === 'plan') {
-          active.forEach((lesson) => {
-            const line = document.createElement('div');
-            line.className = 'card-line';
-            const time = document.createElement('time');
-            time.textContent = lesson.start;
-            const body = document.createElement('div');
-            const title = document.createElement('strong');
-            title.textContent = lesson.title || 'название пока не задано';
-            body.append(title);
-            if (lesson.note) {
-              const note = document.createElement('small');
-              note.textContent = lesson.note;
-              body.append(note);
-            }
-            if (lesson.status === 'moved') {
-              const mark = document.createElement('em');
-              mark.textContent = 'перенесено';
-              body.append(mark);
-            }
-            line.append(time, body);
-            cardLessons.append(line);
-          });
-        } else {
-          const blocks = [];
-          active.forEach((lesson, index) => {
-            blocks.push({ kind: 'busy', start: lesson.start, end: lesson.end, order: index });
-            const window = derived.freeWindows[index];
-            if (window) blocks.push({ kind: 'free', start: window.start, end: window.end, order: index + 0.5 });
-          });
-          blocks.sort((a, b) => a.start.localeCompare(b.start) || a.order - b.order).forEach((block) => {
-            const line = document.createElement('div');
-            line.className = 'card-line ' + block.kind;
-            const time = document.createElement('time');
-            time.textContent = block.start;
-            const body = document.createElement('div');
-            const title = document.createElement('strong');
-            title.textContent = block.kind === 'free' ? 'свободно' : 'занято';
-            body.append(title);
-            const range = document.createElement('small');
-            range.textContent = block.start + '–' + block.end;
-            body.append(range);
-            line.append(time, body);
-            cardLessons.append(line);
-          });
-        }
-
-        if (repo.checked) {
-          const link = document.createElement('a');
-          link.className = 'repo-link';
-          link.href = 'https://github.com/chebaturkin/dayflow';
-          link.target = '_blank';
-          link.rel = 'noreferrer';
-          link.textContent = 'открыть репозиторий на GitHub';
-          cardLessons.append(link);
-        }
-      };
-
-      const renderRows = () => {
-        root.replaceChildren();
-        sortLessons(documentState.lessons).forEach((lesson) => {
-          const row = document.createElement('article');
-          row.className = 'lesson ' + lesson.status;
-          row.innerHTML = '<div class="time-fields"><label><span>с</span><input class="start" type="time" aria-label="начало" /></label><label><span>до</span><input class="end" type="time" aria-label="конец" /></label></div>'
-            + '<div class="lesson-main"><input class="title" maxlength="' + MAX_TITLE_LENGTH + '" aria-label="название события" placeholder="название события" /><input class="note" maxlength="' + MAX_NOTE_LENGTH + '" aria-label="заметка" placeholder="заметка (необязательно)" /></div>'
-            + '<select class="status" aria-label="статус"><option value="planned">по плану</option><option value="moved">перенесено</option><option value="cancelled">отменено</option></select>'
-            + '<div class="row-actions"><button class="duplicate" type="button" aria-label="создать копию">+</button><button class="ics" type="button">ICS</button><button class="remove" type="button" aria-label="удалить">×</button></div>';
-          const start = row.querySelector('.start');
-          const end = row.querySelector('.end');
-          const title = row.querySelector('.title');
-          const note = row.querySelector('.note');
-          const status = row.querySelector('.status');
-          start.value = lesson.start;
-          end.value = lesson.end;
-          title.value = lesson.title;
-          note.value = lesson.note || '';
-          status.value = lesson.status;
-          const update = () => {
-            lesson.start = start.value || '09:00';
-            lesson.end = end.value || '10:00';
-            lesson.title = title.value;
-            lesson.note = note.value;
-            lesson.status = status.value;
-            row.className = 'lesson ' + lesson.status;
-            save();
-            updateDerived();
-            renderCard();
-          };
-          start.onchange = update;
-          end.onchange = update;
-          title.oninput = update;
-          note.oninput = update;
-          status.onchange = update;
-          row.querySelector('.duplicate').onclick = () => {
-            documentState.lessons.push({ ...lesson, id: makeId(), title: (lesson.title + ' · копия').slice(0, MAX_TITLE_LENGTH) });
-            save();
-            renderRows();
-            updateDerived();
-            renderCard();
-          };
-          row.querySelector('.remove').onclick = () => {
-            documentState.lessons = documentState.lessons.filter((item) => item.id !== lesson.id);
-            save();
-            renderRows();
-            updateDerived();
-            renderCard();
-          };
-          row.querySelector('.ics').onclick = () => download(lessonsToIcs(documentState.date, [lesson]), safeFileName(lesson.title) + '.ics', 'text/calendar');
-          root.append(row);
-        });
-      };
-
-      const render = () => {
-        dateInput.value = documentState.date;
-        labelInput.value = documentState.label;
-        repo.checked = localStorage.getItem('dayflow-repo') !== 'false';
-        document.querySelectorAll('.mode').forEach((button) => {
-          const active = button.dataset.mode === mode;
-          button.classList.toggle('active', active);
-          button.setAttribute('aria-pressed', String(active));
-        });
-        document.querySelectorAll('.style').forEach((button) => {
-          const active = button.dataset.style === style;
-          button.classList.toggle('active', active);
-          button.setAttribute('aria-pressed', String(active));
-        });
-        renderRows();
-        updateDerived();
-        renderCard();
-      };
-
-      const setTheme = (theme) => {
-        document.documentElement.classList.toggle('dark', theme === 'dark');
-        const themeButton = document.querySelector('#theme');
-        const nextThemeLabel = theme === 'dark' ? 'включить светлую тему' : 'включить тёмную тему';
-        themeButton.textContent = nextThemeLabel;
-        themeButton.setAttribute('aria-label', nextThemeLabel);
-        localStorage.setItem('dayflow-theme', theme);
-      };
-
-      document.querySelector('#add').onclick = () => {
-        documentState.lessons.push({ id: makeId(), title: '', start: '16:00', end: '17:00', status: 'planned' });
-        save();
-        renderRows();
-        updateDerived();
-        renderCard();
-        root.lastElementChild?.querySelector('.title')?.focus();
-      };
-      document.querySelector('#preset').onchange = (event) => {
-        const value = event.target.value;
-        if (!value) return;
-        documentState.lessons = value === 'empty' ? [] : cloneLessons(samples[value]);
-        save();
-        render();
-        event.target.value = '';
-      };
-      document.querySelectorAll('.mode').forEach((button) => {
-        button.onclick = () => {
-          mode = button.dataset.mode;
-          localStorage.setItem('dayflow-mode', mode);
-          renderCard();
-          document.querySelectorAll('.mode').forEach((item) => {
-            const active = item === button;
-            item.classList.toggle('active', active);
-            item.setAttribute('aria-pressed', String(active));
-          });
-        };
-      });
-      document.querySelectorAll('.style').forEach((button) => {
-        button.onclick = () => {
-          style = button.dataset.style;
-          localStorage.setItem('dayflow-style', style);
-          document.querySelectorAll('.style').forEach((item) => {
-            const active = item === button;
-            item.classList.toggle('active', active);
-            item.setAttribute('aria-pressed', String(active));
-          });
-          renderCard();
-        };
-      });
-      dateInput.onchange = () => { documentState.date = dateInput.value || today; save(); renderCard(); };
-      labelInput.oninput = () => { documentState.label = labelInput.value; save(); renderCard(); };
-      repo.onchange = () => { localStorage.setItem('dayflow-repo', String(repo.checked)); renderCard(); };
-      document.querySelector('#theme').onclick = () => setTheme(document.documentElement.classList.contains('dark') ? 'light' : 'dark');
-      document.querySelector('#ics').onclick = () => {
-        download(lessonsToIcs(documentState.date, documentState.lessons), 'dayflow-' + documentState.date + '.ics', 'text/calendar');
-        showSaved('ICS-файл сохранён');
-      };
-      document.querySelector('#export-json').onclick = () => {
-        download(serializeDocument(documentState), 'dayflow-' + documentState.date + '.json', 'application/json');
-        showSaved('JSON сохранён');
-      };
-      document.querySelector('#import').onclick = () => document.querySelector('#file').click();
-      document.querySelector('#file').onchange = async (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        try {
-          documentState = parseDocument(await file.text());
-          save();
-          render();
-          showSaved('расписание открыто');
-        } catch (error) {
-          showSaved(error instanceof Error ? error.message : 'не получилось открыть файл. выберите JSON из dayflow');
-        }
-        event.target.value = '';
-      };
-      document.querySelector('#reset').onclick = () => {
-        documentState = fallbackDocument();
-        save();
-        render();
-        showSaved('пример восстановлен');
-      };
-      window.addEventListener('keydown', (event) => {
-        if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-          event.preventDefault();
-          document.querySelector('#add').click();
-        }
-      });
-
-      document.querySelector('#png').onclick = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 1600;
-        canvas.height = 2000;
-        let context = canvas.getContext('2d');
-        const palettes = {
-          clean: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
-          dark: { paper: '#30263a', ink: '#fbf1ee', muted: '#cbbbc3', line: '#4a3a50', accent: '#e6a6a3', accentSoft: '#4a2f3a' },
-          lines: { paper: '#fffdf9', ink: '#2b2733', muted: '#766f7b', line: '#e7dce0', accent: '#a95e6d', accentSoft: '#f3dfe1' },
-        };
-        const colors = palettes[style] || palettes.clean;
-        const wrap = (value, font, maxWidth) => {
-          context.font = font;
-          const paragraphs = String(value || '').split(/\r?\n/);
-          const lines = [];
-          paragraphs.forEach((paragraph) => {
-            const words = paragraph.trim().split(/\s+/).filter(Boolean);
-            if (!words.length) {
-              lines.push('');
-              return;
-            }
-            let line = '';
-            words.forEach((word) => {
-              const candidate = line ? line + ' ' + word : word;
-              if (context.measureText(candidate).width <= maxWidth) {
-                line = candidate;
-                return;
-              }
-              if (line) lines.push(line);
-              if (context.measureText(word).width <= maxWidth) {
-                line = word;
-                return;
-              }
-              let fragment = '';
-              Array.from(word).forEach((character) => {
-                const next = fragment + character;
-                if (!fragment || context.measureText(next).width <= maxWidth) fragment = next;
-                else {
-                  lines.push(fragment);
-                  fragment = character;
-                }
-              });
-              line = fragment;
-            });
-            if (line) lines.push(line);
-          });
-          return lines.length ? lines : [''];
-        };
-        const derived = summarizeSchedule(documentState.lessons);
-        const active = sortLessons(activeLessons(documentState.lessons));
-        const titleFont = '500 56px system-ui';
-        const noteFont = '400 27px system-ui';
-        const statusFont = '400 24px system-ui';
-        const bodyWidth = 1090;
-        const planRows = active.map((lesson) => {
-          const title = wrap(lesson.title || 'название пока не задано', titleFont, bodyWidth);
-          const note = lesson.note ? wrap(lesson.note, noteFont, bodyWidth) : [];
-          const status = lesson.status === 'moved' ? ['перенесено'] : [];
-          const contentHeight = title.length * 66
-            + (note.length ? 10 + note.length * 35 : 0)
-            + (status.length ? 9 + status.length * 31 : 0);
-          return { lesson, title, note, status, height: Math.max(145, contentHeight + 28) };
-        });
-        const availabilityBlocks = [];
-        active.forEach((lesson, index) => {
-          availabilityBlocks.push({ kind: 'busy', start: lesson.start, end: lesson.end });
-          if (derived.freeWindows[index]) {
-            availabilityBlocks.push({ kind: 'free', start: derived.freeWindows[index].start, end: derived.freeWindows[index].end });
-          }
-        });
-        availabilityBlocks.sort((a, b) => a.start.localeCompare(b.start));
-        const contentHeight = mode === 'plan'
-          ? (planRows.length ? planRows.reduce((total, row) => total + row.height, 0) : 100)
-          : Math.max(availabilityBlocks.length, 1) * 150;
-        const contentBottom = 540 + contentHeight;
-        const repoY = contentBottom + 28;
-        const footerY = repoY + (repo.checked ? 64 : 0);
-        canvas.height = Math.max(2000, footerY + 120);
-        context = canvas.getContext('2d');
-        const draw = (value, x, y, font, color) => {
-          context.font = font;
-          context.fillStyle = color;
-          context.fillText(value, x, y);
-        };
-        context.fillStyle = colors.paper;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        if (style === 'lines') {
-          context.strokeStyle = colors.line;
-          context.lineWidth = 1;
-          for (let y = 0; y < canvas.height; y += 72) {
-            context.beginPath();
-            context.moveTo(80, y);
-            context.lineTo(1520, y);
-            context.stroke();
-          }
-        }
-        draw(mode === 'availability' ? 'свободное время' : 'план дня', 120, 190, '600 92px system-ui', colors.ink);
-        draw(formatDate(documentState.date), 120, 258, '400 34px system-ui', colors.muted);
-        draw(documentState.label.trim() || 'dayflow', 120, 310, '400 30px monospace', colors.muted);
-        draw('занято ' + formatMinutes(derived.totalMinutes) + ' · свободно ' + derived.freeWindows.length + ' ' + wordForWindows(derived.freeWindows.length), 120, 410, '400 34px system-ui', colors.accent);
-        let y = 540;
-        if (!active.length) {
-          draw('пока нет событий — добавьте первое', 120, y, '400 42px system-ui', colors.muted);
-        } else if (mode === 'plan') {
-          planRows.forEach((row) => {
-            const { lesson, title, note, status } = row;
-            context.strokeStyle = colors.line;
-            context.beginPath();
-            context.moveTo(120, y + row.height - 24);
-            context.lineTo(1480, y + row.height - 24);
-            context.stroke();
-            draw(lesson.start, 120, y, '400 36px monospace', colors.accent);
-            title.forEach((line, index) => draw(line, 390, y + index * 66, titleFont, colors.ink));
-            let detailY = y + title.length * 66 + 10;
-            note.forEach((line) => {
-              draw(line, 390, detailY, noteFont, colors.muted);
-              detailY += 35;
-            });
-            if (status.length) draw(status[0], 390, detailY + 9, statusFont, colors.accent);
-            y += row.height;
-          });
-        } else {
-          availabilityBlocks.forEach((block) => {
-            if (block.kind === 'free') {
-              context.fillStyle = colors.accentSoft;
-              context.fillRect(120, y - 48, 1360, 100);
-            }
-            context.strokeStyle = colors.line;
-            context.beginPath();
-            context.moveTo(120, y + 42);
-            context.lineTo(1480, y + 42);
-            context.stroke();
-            draw(block.start + '–' + block.end, 120, y, '400 36px monospace', colors.accent);
-            draw(block.kind === 'free' ? 'свободно' : 'занято', 480, y, '500 56px system-ui', colors.ink);
-            y += 150;
-          });
-        }
-        if (repo.checked) draw('GitHub · chebaturkin/dayflow', 120, repoY, '400 26px monospace', colors.muted);
-        draw('создано в dayflow', 120, footerY, '400 24px system-ui', colors.muted);
-        canvas.toBlob((blob) => blob && download(blob, 'dayflow-' + documentState.date + '-' + mode + '.png', 'image/png'), 'image/png');
-        showSaved('PNG сохранён');
-      };
-
-      setTheme(localStorage.getItem('dayflow-theme') === 'dark' ? 'dark' : 'light');
-      render();
+      import '../lib/editor';
     </script>
   </body>
 </html>

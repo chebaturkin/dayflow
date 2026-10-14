@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activeLessons, conflicts, durationMinutes, freeWindows, sortLessons, summarizeSchedule, validateSchedule } from './schedule';
+import { activeLessons, availabilityBlocks, conflicts, durationMinutes, freeWindows, nextEventSlot, sortLessons, summarizeSchedule, validateSchedule } from './schedule';
 
 const lessons = [
   { id: 'late', title: 'studio practice', start: '13:40', end: '15:10', status: 'moved' as const },
@@ -75,5 +75,38 @@ describe('schedule model', () => {
       freeWindows: [{ start: '10:30', end: '13:40', minutes: 190 }],
       conflicts: [],
     });
+  });
+
+  it('counts overlapping time once and uses the latest end', () => {
+    expect(summarizeSchedule([
+      { id: 'long', title: 'long', start: '09:00', end: '12:00', status: 'planned' },
+      { id: 'short', title: 'short', start: '10:00', end: '11:00', status: 'planned' },
+    ])).toMatchObject({ totalMinutes: 180, lastEnd: '12:00' });
+  });
+
+  it('merges busy intervals and places free time between them', () => {
+    expect(availabilityBlocks([
+      { id: 'one', title: 'secret', start: '09:00', end: '12:00', status: 'planned' },
+      { id: 'two', title: 'secret', start: '10:00', end: '11:00', status: 'planned' },
+      { id: 'three', title: 'secret', start: '13:00', end: '14:00', status: 'planned' },
+    ])).toEqual([
+      { kind: 'busy', start: '09:00', end: '12:00' },
+      { kind: 'free', start: '12:00', end: '13:00' },
+      { kind: 'busy', start: '13:00', end: '14:00' },
+    ]);
+  });
+
+  it('adds a new hour after the latest active event', () => {
+    expect(nextEventSlot(lessons)).toEqual({ start: '15:10', end: '16:10' });
+    expect(nextEventSlot([])).toEqual({ start: '09:00', end: '10:00' });
+  });
+
+  it('finds an earlier free hour instead of wrapping past midnight', () => {
+    expect(nextEventSlot([{ id: 'late', title: 'late', start: '22:30', end: '23:30', status: 'planned' }])).toEqual({ start: '09:00', end: '10:00' });
+    expect(nextEventSlot([{ id: 'full', title: 'full', start: '00:00', end: '23:59', status: 'planned' }])).toBeNull();
+  });
+
+  it('finds free time before nine when the rest of the day is full', () => {
+    expect(nextEventSlot([{ id: 'full', title: 'full', start: '09:00', end: '23:59', status: 'planned' }])).toEqual({ start: '00:00', end: '01:00' });
   });
 });
