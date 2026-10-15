@@ -2,3 +2,23 @@ node_modules/
 dist/
 .astro/
 .env
+
+# Local machine and test output
+.DS_Store
+.env.*
+!.env.example
+*.log
+__pycache__/
+.pytest_cache/
+.venv/
+.worktrees/
+worktrees/
+
+# Local agent notes and instructions
+AGENTS.md
+AGENT_PROMPT.md
+docs/superpowers/
+.codex/
+
+# Local author and agent notes
+.superpowers/

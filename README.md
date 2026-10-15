@@ -1,8 +1,8 @@
-# dayflow
-
 **english** · [русский](README.ru.md)
 
-a day plan you can share. add events and notes, then save an image or copy the text for a message. when meeting names should stay private, share just your busy and free time.
+# dayflow
+
+a day plan you can share as an image or text. add events and notes, or share only your busy and free time when meeting names should stay private.
 
 [open dayflow](https://chebaturkin.github.io/dayflow/?lang=en)
 
@@ -54,7 +54,7 @@ choose a day plan or free time on the right, then save an image or copy the text
 
 ## language
 
-the interface, built-in examples and card labels are available in english and russian. the first visit follows your browser language, with english as the fallback. the small `ru / en` control in the header remembers your choice. links with `?lang=en` or `?lang=ru` open a language directly.
+the interface, fresh examples and exported labels support english and russian. choose `ru / en` in the header. a valid `?lang=en` or `?lang=ru` link takes priority, then your saved choice, the first supported browser language and english as the fallback.
 
 switching happens in place. your own names, notes, dates and unfinished time edits stay as entered. existing saved records are never automatically translated.
 
@@ -66,14 +66,14 @@ clearing browser data removes the local schedule, so download a copy first. buil
 
 ## run locally
 
-use node.js 20 or newer.
+use node.js 20 or newer. install the versions recorded in the lockfile:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-open the address shown in the terminal.
+open [the local app](http://127.0.0.1:4321/dayflow/?lang=en). the terminal shows a different address if port 4321 is busy.
 
 ## checks
 
@@ -94,7 +94,7 @@ python3 tests/language-check.py
 
 `DAYFLOW_URL` can point to another local server. language checks cover pending edits, user text, URL parameters, preference persistence, exports and both languages at 320, 390, 768 and 1440 pixels. layout checks also cover five intermediate widths.
 
-to capture the real example in both languages:
+the screenshots above use fictional events and the corresponding interface language. to refresh both sets from the running app:
 
 ```bash
 python3 tests/capture-languages.py
